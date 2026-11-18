@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Stack Tower</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  body {
+    font-family: system-ui, sans-serif; color: #fff; user-select: none; touch-action: none;
+    background: #2c3f70;
+  }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #hud { position: fixed; top: 6%; left: 0; right: 0; text-align: center; pointer-events: none; }
+  #score { font-size: 64px; font-weight: 300; text-shadow: 0 2px 10px rgba(0,0,0,.45); }
+  #combo { font-size: 18px; height: 24px; opacity: 0; transition: opacity .2s; letter-spacing: 2px; color: #ffe17a; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+  #overlay {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; background: rgba(20,24,48,.5);
+  }
+  #overlay h1 { font-size: 40px; font-weight: 300; letter-spacing: 3px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+  #overlay p { opacity: .85; font-size: 15px; text-align: center; padding: 0 20px; }
+  #overlay button {
+    margin-top: 6px; background: #fff6ea; color: #5a3a28; border: none; border-radius: 24px;
+    padding: 12px 32px; font-size: 17px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  }
+  #bestLine { font-size: 15px; opacity: .8; }
+</style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="hud"><div id="score">0</div><div id="combo"></div></div>
+  <div id="overlay">
+    <h1 id="title">CAKE STACK</h1>
+    <p id="sub">Chạm màn hình để thả từng tầng bánh.<br>Thả càng khớp, bánh càng cao.</p>
+    <div id="bestLine"></div>
+    <button id="startBtn">Bắt đầu</button>
+  </div>
+
+<script>
+// ---------- Telegram ----------
+const tg = window.Telegram && window.Telegram.WebApp;
+const inTelegram = !!(tg && tg.initData);
+if (tg) { tg.ready(); tg.expand(); try { tg.disableVerticalSwipes(); } catch (e) {} }
+const hap = {
+  tap()  { try { inTelegram && tg.HapticFeedback.impactOccurred('light'); } catch (e) {} },
+  ok()   { try { inTelegram && tg.HapticFeedback.notificationOccurred('success'); } catch (e) {} },
+  fail() { try { inTelegram && tg.HapticFeedback.notificationOccurred('error'); } catch (e) {} },
+};
+function loadBest(cb) {
+  if (inTelegram && tg.CloudStorage) tg.CloudStorage.getItem('stackBest', (e, v) => cb(e ? 0 : Number(v || 0)));
+  else { let v = 0; try { v = Number(localStorage.getItem('stackBest') || 0); } catch (e) {} cb(v); }
+}
+function saveBest(v) {
+  if (inTelegram && tg.CloudStorage) tg.CloudStorage.setItem('stackBest', String(v));
+  else { try { localStorage.setItem('stackBest', v); } catch (e) {} }
+}
+
+// ---------- Cấu hình ----------
+const BASE = 100;      // cạnh khối đáy (đơn vị thế giới)
+const H = 22;          // chiều cao mỗi tầng bánh
+const RANGE = 150;     // khối trượt từ -RANGE tới +RANGE
+const PERFECT = 3;     // lệch dưới mức này tính là "Perfect"
+const GRAVITY = 0.6;
+const COS = Math.cos(Math.PI / 6), SIN = 0.5;
+
+// ---------- Canvas ----------
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+let W, Hs, scale, dpr;
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth; Hs = window.innerHeight;
+  cv.width = W * dpr; cv.height = Hs * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  scale = Math.min(W * 0.5, Hs * 0.42) / (2 * BASE * COS);
+}
+window.addEventListener('resize', resize); resize();
+
+// ---------- Trạng thái ----------
+let stack, cur, debris, axis, offset, dir, speed, camY, combo, score, best = 0;
+let running = false, falling = false, rings = [], baseHue;
+const $ = id => document.getElementById(id);
+
+// Màu kem phủ mỗi tầng (lặp lại theo vòng)
+const FROSTING = ['#f7c6d9', '#fbe3b0', '#c9e8d4', '#d9cdf5', '#ffd1b3', '#bfe6f5', '#ffc2c2'];
+const frost = b => FROSTING[(b.i + baseHue) % FROSTING.length];
+const SPONGE_L = '#d99a63', SPONGE_R = '#b97b47', FILLING = 'rgba(255,245,235,.85)';
+const stars = Array.from({ length: 120 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + .3, p: Math.random() * 6 }));
+
+function reset() {
+  baseHue = Math.floor(Math.random() * FROSTING.length);
+  stack = [{ x: -BASE / 2, z: -BASE / 2, w: BASE, d: BASE, y: -24, h: 24, i: 0 }];
+  debris = []; rings = [];
+  combo = 0; score = 0; speed = 2.2; camY = 0;
+  axis = 'x';
+  newBlock();
+  $('score').textContent = 0;
+}
+
+function newBlock() {
+  const top = stack[stack.length - 1];
+  offset = -RANGE; dir = 1;
+  cur = { x: top.x, z: top.z, w: top.w, d: top.d, y: top.y + top.h, h: H, i: stack.length };
+  cur[axis] = top[axis] + offset;
+}
+
+// ---------- Thả khối ----------
+function drop() {
+  if (!running || falling) return;
+  const top = stack[stack.length - 1];
+  const size = axis === 'x' ? 'w' : 'd';
+  const delta = cur[axis] - top[axis];
+  const overlap = top[size] - Math.abs(delta);
+
+  if (overlap <= 0) {                        // trượt hoàn toàn
+    debris.push({ ...cur, vy: 0, rot: 0, vr: 0.025 });
+    return gameOver();
+  }
+
+  if (Math.abs(delta) < PERFECT) {           // Perfect
+    cur[axis] = top[axis];
+    combo++;
+    if (combo >= 3 && cur[size] < BASE) {    // thưởng: khối nở rộng lại
+      const grow = Math.min(8, BASE - cur[size]);
+      cur[size] += grow; cur[axis] -= grow / 2;
+    }
+    rings.push({ ...cur, t: 0 });
+    showCombo(combo >= 2 ? `PERFECT ×${combo}` : 'PERFECT');
+    hap.ok();
+  } else {                                   // cắt phần thừa
+    combo = 0;
+    const piece = { ...cur, vy: 0, rot: 0, vr: (delta > 0 ? 1 : -1) * (axis === 'x' ? -0.04 : 0.04) };
+    if (delta > 0) {
+      piece[axis] = top[axis] + top[size];
+      piece[size] = delta;
+      cur[size] = overlap;
+    } else {
+      piece[size] = -delta;
+      cur[axis] = top[axis];
+      cur[size] = overlap;
+    }
+    debris.push(piece);
+    hap.tap();
+  }
+
+  stack.push(cur);
+  score = stack.length - 1;
+  $('score').textContent = score;
+  speed = Math.min(5, 2.2 + score * 0.06);
+  axis = axis === 'x' ? 'z' : 'x';
+  newBlock();
+}
+
+let comboTimer;
+function showCombo(text) {
+  const el = $('combo'); el.textContent = text; el.style.opacity = 1;
+  clearTimeout(comboTimer); comboTimer = setTimeout(() => el.style.opacity = 0, 700);
+}
+
+function gameOver() {
+  running = false; falling = true;
+  hap.fail();
+  if (score > best) { best = score; saveBest(best); }
+  setTimeout(() => {
+    falling = false;
+    $('title').textContent = score;
+    $('sub').innerHTML = score > 0 && score >= best ? 'Kỷ lục mới!' : 'Thử lại nhé!';
+    $('bestLine').textContent = 'Kỷ lục: ' + best;
+    $('startBtn').textContent = 'Chơi lại';
+    $('overlay').style.display = 'flex';
+    if (inTelegram) { tg.MainButton.setText('Chơi lại'); tg.MainButton.show(); }
+  }, 900);
+}
+
+function start() {
+  reset(); running = true;
+  $('overlay').style.display = 'none';
+  if (inTelegram) tg.MainButton.hide();
+}
+
+// ---------- Vẽ ----------
+function iso(x, y, z) {
+  return [W / 2 + (x - z) * COS * scale, Hs * 0.62 + ((x + z) * SIN - (y - camY)) * scale];
+}
+function poly(pts, fill) {
+  ctx.beginPath();
+  pts.forEach(([x, y, z], k) => { const [sx, sy] = iso(x, y, z); k ? ctx.lineTo(sx, sy) : ctx.moveTo(sx, sy); });
+  ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+}
+// ---------- Nền: tiệm bánh mùa đông ----------
+// Cảnh trong tiệm (tường gỗ, cửa sổ tuyết, đèn dây) trôi xuống khi tháp cao lên,
+// lộ ra trần nhà, mái phủ tuyết rồi bầu trời đêm.
+const town = Array.from({ length: 9 }, (_, k) => ({ x: k / 9, w: 0.08 + Math.random() * 0.06, h: 0.35 + Math.random() * 0.45,
+  lit: Array.from({ length: 12 }, () => Math.random() < 0.45) }));
+const winSnow = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), v: 0.0015 + Math.random() * 0.003, r: 1 + Math.random() * 2 }));
+const skySnow = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), v: 0.001 + Math.random() * 0.002, r: 1 + Math.random() * 2.2 }));
+const BULBS = ['#ff5a5a', '#ffd25a', '#5aff8a', '#5ac8ff', '#ff9af0'];
+
+function drawBackground(t) {
+  const climb = Math.max(0, camY - 2 * H) * scale * 0.45;   // tốc độ trôi của tường (parallax)
+  const A = Hs * 0.62 + climb;                              // mốc: mép dưới cửa sổ
+  const ww = Math.min(W * 0.86, 520), wx = (W - ww) / 2;
+  const wh = Hs * 0.42, wy = A - wh - 14;
+  const ceil = A - Hs * 0.66, roof = ceil - 26;
+
+  // Bầu trời đêm + sao + tuyết (chỉ thấy khi đã lên trên mái)
+  if (roof > 0) {
+    const sky = ctx.createLinearGradient(0, 0, 0, roof);
+    sky.addColorStop(0, '#0b1230'); sky.addColorStop(1, '#2c3f70');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, roof);
+    stars.forEach(s => {
+      const sy = s.y * roof;
+      ctx.fillStyle = `rgba(255,255,255,${0.3 + 0.6 * Math.abs(Math.sin(t / 800 + s.p))})`;
+      ctx.fillRect(s.x * W, sy, s.r, s.r);
+    });
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, roof); ctx.clip();
+    skySnow.forEach(s => {
+      s.y += s.v; if (s.y > 1) { s.y = 0; s.x = Math.random(); }
+      ctx.fillStyle = 'rgba(255,255,255,.85)';
+      ctx.beginPath(); ctx.arc(s.x * W + Math.sin(t / 900 + s.y * 9) * 8, s.y * Hs, s.r, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+    // Mái hiên phủ tuyết + băng rủ
+    ctx.fillStyle = '#5a2e2a'; ctx.fillRect(0, roof, W, 26);
+    ctx.fillStyle = '#f4f8ff';
+    ctx.beginPath(); ctx.moveTo(0, roof + 4);
+    for (let x = 0; x <= W; x += 24) ctx.quadraticCurveTo(x + 12, roof - 8, x + 24, roof + 4);
+    ctx.lineTo(W, roof + 10); ctx.lineTo(0, roof + 10); ctx.fill();
+    ctx.fillStyle = 'rgba(220,240,255,.9)';
+    for (let x = 8, k = 0; x < W; x += 22, k++) {
+      const l = 8 + (k * 7) % 14;
+      ctx.beginPath(); ctx.moveTo(x - 3, roof + 26); ctx.lineTo(x + 3, roof + 26); ctx.lineTo(x, roof + 26 + l); ctx.fill();
+    }
+  }
+
+  // Tường gỗ
+  const wallTop = Math.max(0, roof + 26);
+  if (wallTop < Hs) {
+    ctx.fillStyle = '#7b5a44'; ctx.fillRect(0, wallTop, W, Hs - wallTop);
+    ctx.fillStyle = 'rgba(0,0,0,.12)';
+    for (let x = 0; x < W; x += 38) ctx.fillRect(x, wallTop, 2, Hs - wallTop);
+    // Xà trần
+    if (ceil > -30 && ceil < Hs) { ctx.fillStyle = '#4e3426'; ctx.fillRect(0, ceil, W, 22); ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(0, ceil, W, 3); }
+  }
+
+  // Cửa sổ nhìn ra phố tuyết
+  if (wy < Hs && wy + wh > 0) {
+    const street = ctx.createLinearGradient(0, wy, 0, wy + wh);
+    street.addColorStop(0, '#1d2b4f'); street.addColorStop(1, '#3d5a8a');
+    ctx.fillStyle = street; ctx.fillRect(wx, wy, ww, wh);
+    ctx.save(); ctx.beginPath(); ctx.rect(wx, wy, ww, wh); ctx.clip();
+    town.forEach(b => {
+      const bx = wx + b.x * ww, bw = b.w * ww, bh = b.h * wh, by = wy + wh - bh;
+      ctx.fillStyle = '#26365a'; ctx.fillRect(bx, by, bw, bh);
+      ctx.fillStyle = '#eef4ff'; ctx.fillRect(bx - 2, by - 3, bw + 4, 4);   // tuyết trên mái
+      b.lit.forEach((on, k) => {
+        if (!on) return;
+        const cx = bx + 5 + (k % 3) * (bw - 10) / 2.5, cy = by + 10 + Math.floor(k / 3) * 16;
+        if (cy < wy + wh - 8) { ctx.fillStyle = 'rgba(255,214,130,.85)'; ctx.fillRect(cx, cy, 5, 7); }
+      });
+    });
+    ctx.fillStyle = '#f4f8ff'; ctx.fillRect(wx, wy + wh - 10, ww, 10);     // tuyết đọng dưới đường
+    winSnow.forEach(s => {
+      s.y += s.v; if (s.y > 1) { s.y = 0; s.x = Math.random(); }
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      ctx.beginPath(); ctx.arc(wx + s.x * ww + Math.sin(t / 800 + s.y * 8) * 6, wy + s.y * wh, s.r, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+    // Khung cửa sổ
+    ctx.strokeStyle = '#4a3020'; ctx.lineWidth = 10; ctx.strokeRect(wx, wy, ww, wh);
+    ctx.lineWidth = 5; ctx.beginPath();
+    ctx.moveTo(wx + ww / 2, wy); ctx.lineTo(wx + ww / 2, wy + wh);
+    ctx.moveTo(wx, wy + wh * 0.45); ctx.lineTo(wx + ww, wy + wh * 0.45); ctx.stroke();
+    ctx.fillStyle = '#f4f8ff'; ctx.fillRect(wx - 6, wy + wh + 2, ww + 12, 7);  // bậu cửa có tuyết
+    // Đèn dây
+    ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 1.2; ctx.beginPath();
+    const n = 14;
+    for (let k = 0; k <= n; k++) {
+      const x = wx + (ww * k) / n, y = wy - 6 + Math.sin((k / n) * Math.PI) * 14;
+      k ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+    for (let k = 0; k <= n; k++) {
+      const x = wx + (ww * k) / n, y = wy - 6 + Math.sin((k / n) * Math.PI) * 14;
+      const on = 0.55 + 0.45 * Math.sin(t / 400 + k * 1.7);
+      ctx.save(); ctx.shadowColor = BULBS[k % 5]; ctx.shadowBlur = 10 * on;
+      ctx.globalAlpha = 0.5 + 0.5 * on; ctx.fillStyle = BULBS[k % 5];
+      ctx.beginPath(); ctx.arc(x, y + 5, 4, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
+  }
+
+  // Quầy bánh (gắn với tháp, trôi cùng tốc độ tháp)
+  const ct = iso(0, -24, 0)[1] - 34 * scale;
+  if (ct < Hs) {
+    ctx.fillStyle = '#f3ece2'; ctx.fillRect(0, ct, W, 70 * scale);
+    ctx.fillStyle = 'rgba(0,0,0,.06)'; ctx.fillRect(0, ct, W, 3);
+    ctx.fillStyle = '#8a6248'; ctx.fillRect(0, ct + 70 * scale, W, Hs);
+    ctx.fillStyle = 'rgba(0,0,0,.12)';
+    for (let x = 20; x < W; x += 60) ctx.fillRect(x, ct + 70 * scale + 14, 44, Hs);
+  }
+
+  // Ánh sáng ấm trong tiệm
+  ctx.fillStyle = 'rgba(255,190,110,.06)'; ctx.fillRect(0, 0, W, Hs);
+}
+
+// ---------- Khối bánh kem (hiệu ứng 3D: ánh sáng, bóng, kết cấu) ----------
+const rnd = (i, k) => { const s = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return s - Math.floor(s); };
+function shade(hex, f) {                       // f > 0: sáng hơn, f < 0: tối hơn
+  const n = parseInt(hex.slice(1), 16);
+  let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const t = f > 0 ? 255 : 0, a = Math.abs(f);
+  r = Math.round(r + (t - r) * a); g = Math.round(g + (t - g) * a); b = Math.round(b + (t - b) * a);
+  return `rgb(${r},${g},${b})`;
+}
+const SPRINKLES = ['#ff5a7a', '#ffd25a', '#5ac8ff', '#8ae06a', '#c78aff', '#ffffff'];
+
+// Mặt bên của khối: 'x' = mặt phải (hướng sáng), 'z' = mặt trái (khuất sáng)
+function faceAt(b, f, y0, y1) {
+  const { x, z, w, d } = b;
+  return f === 'x'
+    ? [[x + w, y0, z], [x + w, y1, z], [x + w, y1, z + d], [x + w, y0, z + d]]
+    : [[x, y0, z + d], [x + w, y0, z + d], [x + w, y1, z + d], [x, y1, z + d]];
+}
+function onFace(b, f, u, y) {                  // điểm trên mặt bên, u = 0..1 dọc theo cạnh
+  return f === 'x' ? [b.x + b.w, y, b.z + u * b.d] : [b.x + u * b.w, y, b.z + b.d];
+}
+function vfill(pts, c0, c1) {                  // tô gradient dọc màn hình
+  const ys = pts.map(p => iso(...p)[1]);
+  const g = ctx.createLinearGradient(0, Math.min(...ys), 0, Math.max(...ys));
+  g.addColorStop(0, c0); g.addColorStop(1, c1);
+  poly(pts, g);
+}
+
+function plate(b) {                            // đĩa sứ trắng viền vàng
+  const { x, y, z, w, h, d } = b, top = y + h;
+  vfill(faceAt(b, 'x', y, top - 4), '#ffffff', '#d9d3ca');
+  vfill(faceAt(b, 'z', y, top - 4), '#ece7df', '#c4bdb2');
+  vfill(faceAt(b, 'x', top - 4, top), '#f6d98a', '#c99d45');
+  vfill(faceAt(b, 'z', top - 4, top), '#e2b85c', '#a87f30');
+  vfill([[x, top, z], [x + w, top, z], [x + w, top, z + d], [x, top, z + d]], '#ffffff', '#efebe4');
+}
+
+function cake(b) {
+  if (b.i === 0) return plate(b);
+  const { x, y, z, w, h, d, i } = b;
+  const top = y + h, fc = frost(b);
+  const band = h * 0.3, m = y + h * 0.33, mh = h * 0.14;
+
+  for (const f of ['z', 'x']) {
+    const lit = f === 'x';
+    // Cốt bánh bông lan
+    vfill(faceAt(b, f, y, top - band), lit ? '#ebb67d' : '#c98a50', lit ? '#c98a50' : '#a3663a');
+    // Lỗ xốp
+    ctx.fillStyle = lit ? 'rgba(140,80,35,.35)' : 'rgba(100,55,25,.35)';
+    const len = f === 'x' ? d : w;
+    const pores = Math.min(14, Math.floor(len / 6));
+    for (let k = 0; k < pores; k++) {
+      const hv = y + h * (0.06 + 0.5 * rnd(i, k + (lit ? 0 : 40)));
+      if (hv > m - 1 && hv < m + mh + 1) continue;
+      const [sx, sy] = iso(...onFace(b, f, 0.06 + 0.88 * rnd(i, k + 90 + (lit ? 0 : 40)), hv));
+      ctx.beginPath(); ctx.ellipse(sx, sy, (0.5 + rnd(i, k + 7)) * scale, (0.35 + 0.5 * rnd(i, k + 3)) * scale, 0, 0, 7); ctx.fill();
+    }
+    // Lớp nhân kem
+    vfill(faceAt(b, f, m, m + mh), lit ? '#fffaf3' : '#efe2d2', lit ? '#f3e6d6' : '#d9c8b4');
+    // Bóng tiếp xúc ở chân tầng bánh
+    vfill(faceAt(b, f, y, y + 3.5), 'rgba(60,30,10,0)', 'rgba(60,30,10,.45)');
+    // Viền kem
+    vfill(faceAt(b, f, top - band, top), lit ? shade(fc, 0.1) : shade(fc, -0.1), lit ? shade(fc, -0.06) : shade(fc, -0.22));
+  }
+
+  // Giọt kem chảy tròn đầu, có điểm bóng
+  for (const f of ['z', 'x']) {
+    const lit = f === 'x', len = f === 'x' ? d : w;
+    const n = Math.max(1, Math.floor(len / 13));
+    for (let k = 0; k < n; k++) {
+      const seed = k + (lit ? 200 : 300);
+      if (rnd(i, seed + 33) < 0.18) continue;                       // thỉnh thoảng bỏ trống
+      const uc = (k + 0.3 + 0.4 * rnd(i, seed + 11)) / n;           // vị trí lệch ngẫu nhiên
+      const hw = Math.min(1.4 + 2 * rnd(i, seed + 22), (len / n) * 0.4) / len;
+      const dl = 1.5 + 8 * Math.pow(rnd(i, seed), 1.6);             // đa số ngắn, vài giọt dài
+      let [ax, ay] = iso(...onFace(b, f, uc - hw, top - band + 0.5));
+      let [bx, by] = iso(...onFace(b, f, uc + hw, top - band + 0.5));
+      if (ax > bx) { [ax, bx] = [bx, ax]; [ay, by] = [by, ay]; }
+      const r = (bx - ax) / 2, cx = ax + r, tip = Math.max(ay, by) + dl * scale;
+      const g = ctx.createLinearGradient(ax, 0, bx, 0);
+      g.addColorStop(0, lit ? shade(fc, 0.05) : shade(fc, -0.12));
+      g.addColorStop(1, lit ? shade(fc, -0.1) : shade(fc, -0.25));
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.moveTo(ax, ay - 1); ctx.lineTo(ax, tip); ctx.arc(cx, tip, r, Math.PI, 0, true); ctx.lineTo(bx, by - 1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.45)';
+      ctx.beginPath(); ctx.ellipse(cx - r * 0.35, tip - r * 0.1, r * 0.28, r * 0.45, 0, 0, 7); ctx.fill();
+    }
+  }
+
+  // Mặt trên: gradient + vệt sáng phản chiếu + rắc cốm
+  const topPts = [[x, top, z], [x + w, top, z], [x + w, top, z + d], [x, top, z + d]];
+  vfill(topPts, shade(fc, 0.3), shade(fc, 0.02));
+  ctx.save();
+  ctx.beginPath(); topPts.forEach((p, k) => { const [a, c] = iso(...p); k ? ctx.lineTo(a, c) : ctx.moveTo(a, c); }); ctx.closePath(); ctx.clip();
+  const [hx, hy] = iso(x + w * 0.3, top, z + d * 0.35);
+  const hr = Math.min(w, d) * 0.45 * scale;
+  const sp = ctx.createRadialGradient(hx, hy, 0, hx, hy, hr);
+  sp.addColorStop(0, 'rgba(255,255,255,.55)'); sp.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = sp; ctx.fillRect(hx - hr, hy - hr, hr * 2, hr * 2);
+  ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1.2, 1.4 * scale);
+  const nsp = Math.min(18, Math.floor((w * d) / 350));
+  for (let k = 0; k < nsp; k++) {
+    const [sx, sy] = iso(x + w * (0.08 + 0.84 * rnd(i, k + 500)), top, z + d * (0.08 + 0.84 * rnd(i, k + 600)));
+    const a = rnd(i, k + 700) * Math.PI, l = 1.6 * scale;
+    ctx.strokeStyle = SPRINKLES[Math.floor(rnd(i, k + 800) * SPRINKLES.length)];
+    ctx.beginPath(); ctx.moveTo(sx - Math.cos(a) * l, sy - Math.sin(a) * l * 0.5); ctx.lineTo(sx + Math.cos(a) * l, sy + Math.sin(a) * l * 0.5); ctx.stroke();
+  }
+  ctx.restore();
+
+  // Viền sáng ở mép trên (cảm giác bo tròn)
+  ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  [[x + w, top, z], [x + w, top, z + d], [x, top, z + d]].forEach((p, k) => { const [a, c] = iso(...p); k ? ctx.lineTo(a, c) : ctx.moveTo(a, c); });
+  ctx.stroke();
+}
+
+// Bóng của khối đang trượt đổ lên mặt tầng bánh trên cùng
+function castShadow(c, t) {
+  const ox = 3, oz = 3;
+  const x0 = Math.max(c.x + ox, t.x), x1 = Math.min(c.x + c.w + ox, t.x + t.w);
+  const z0 = Math.max(c.z + oz, t.z), z1 = Math.min(c.z + c.d + oz, t.z + t.d);
+  if (x1 <= x0 || z1 <= z0) return;
+  const y = t.y + t.h + 0.1;
+  poly([[x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1]], 'rgba(70,35,10,.22)');
+}
+
+// Bóng đĩa bánh trên mặt quầy
+function plateShadow() {
+  const [sx, sy] = iso(0, -24, 0);
+  ctx.fillStyle = 'rgba(60,35,20,.25)';
+  ctx.beginPath(); ctx.ellipse(sx, sy + 2 * scale, BASE * 0.95 * scale, BASE * 0.28 * scale, 0, 0, 7); ctx.fill();
+}
+
+// Mảnh bánh rơi: xoay lộn quanh tâm
+function drawPiece(p) {
+  const [cx, cy] = iso(p.x + p.w / 2, p.y + p.h / 2, p.z + p.d / 2);
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(p.rot || 0); ctx.translate(-cx, -cy);
+  cake(p); ctx.restore();
+}
+
+// Cherry trên chóp kem
+function cherry(b) {
+  const [sx, sy] = iso(b.x + b.w / 2, b.y + b.h, b.z + b.d / 2);
+  const r = Math.max(4, 5.5 * scale);
+  for (let k = 0; k < 3; k++) {               // kem xoắn
+    const rr = r * (1.5 - k * 0.38), yy = sy - k * r * 0.55;
+    const g = ctx.createLinearGradient(sx - rr, 0, sx + rr, 0);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#e4d8cc');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(sx, yy, rr, rr * 0.5, 0, 0, 7); ctx.fill();
+  }
+  const cy = sy - r * 1.9;
+  ctx.strokeStyle = '#3a7a22'; ctx.lineWidth = Math.max(1.5, 1.3 * scale);
+  ctx.beginPath(); ctx.moveTo(sx, cy - r * 0.8); ctx.quadraticCurveTo(sx + r * 0.3, cy - r * 2.4, sx + r * 1.2, cy - r * 2.6); ctx.stroke();
+  const g = ctx.createRadialGradient(sx - r * 0.35, cy - r * 0.35, r * 0.1, sx, cy, r);
+  g.addColorStop(0, '#ff7a8a'); g.addColorStop(0.5, '#e3263f'); g.addColorStop(1, '#8e0f22');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, cy, r, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.ellipse(sx - r * 0.35, cy - r * 0.4, r * 0.25, r * 0.15, -0.6, 0, 7); ctx.fill();
+}
+const box = cake;
+
+function ring(r) {
+  const g = r.t * 14, a = 1 - r.t;
+  const { x, z, w, d } = r, y = r.y + r.h;
+  ctx.beginPath();
+  [[x - g, z - g], [x + w + g, z - g], [x + w + g, z + d + g], [x - g, z + d + g]].forEach(([px, pz], k) => {
+    const [sx, sy] = iso(px, y, pz); k ? ctx.lineTo(sx, sy) : ctx.moveTo(sx, sy);
+  });
+  ctx.closePath(); ctx.strokeStyle = `rgba(255,236,170,${a})`; ctx.lineWidth = 2.5; ctx.stroke();
+}
+
+// ---------- Vòng lặp ----------
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(2, (now - last) / 16.67); last = now;
+
+  if (running) {
+    offset += speed * dir * dt;
+    if (offset > RANGE) { offset = RANGE; dir = -1; }
+    if (offset < -RANGE) { offset = -RANGE; dir = 1; }
+    cur[axis] = stack[stack.length - 1][axis] + offset;
+  }
+
+  const targetCam = stack.length * H;
+  camY += (targetCam - camY) * 0.1 * dt;
+
+  debris.forEach(p => { p.vy -= GRAVITY * dt; p.y += p.vy * dt; p.rot += p.vr * dt; });
+  debris = debris.filter(p => p.y > camY - 600);
+  rings.forEach(r => r.t += 0.04 * dt);
+  rings = rings.filter(r => r.t < 1);
+
+  drawBackground(now);
+  const topC = stack[stack.length - 1];
+  const depth = b => b.x + b.w / 2 + b.z + b.d / 2;
+  const front = depth(topC);
+  plateShadow();
+  debris.filter(p => depth(p) <= front).forEach(drawPiece);
+  const from = Math.max(0, stack.length - 40);           // chỉ vẽ 40 khối gần nhất
+  for (let k = from; k < stack.length; k++) box(stack[k]);
+  if (running) { castShadow(cur, topC); box(cur); cherry(cur); }
+  else if (stack.length > 1) cherry(topC);
+  debris.filter(p => depth(p) > front).forEach(drawPiece);
+  rings.forEach(ring);
+
+  requestAnimationFrame(frame);
+}
+
+// ---------- Điều khiển ----------
+$('startBtn').addEventListener('click', e => { e.stopPropagation(); start(); });
+if (inTelegram) tg.MainButton.onClick(start);
+cv.addEventListener('pointerdown', drop);
+document.getElementById('hud').addEventListener('pointerdown', drop);
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); running ? drop() : (!falling && start()); }
+});
+
+reset(); running = false;
+loadBest(v => { best = v; $('bestLine').textContent = best ? 'Kỷ lục: ' + best : ''; });
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
