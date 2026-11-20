@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Happy Cake</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -61,6 +62,23 @@
   #board .msg { padding: 28px 16px; text-align: center; color: #8a6a50; font-size: 15px; border: none; justify-content: center; }
   #board footer { padding: 10px 16px 14px; border-top: 1px solid #f0e2cf; font-size: 13px; color: #8a6a50; text-align: center; }
   #board footer b { color: #4a2f20; }
+  #revive { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: rgba(15,18,38,.5); }
+  #revive .card { width: min(88vw, 340px); background: #fff8ee; color: #4a2f20; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,.45); text-align: center; animation: pop .25s ease-out; }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  #revive .top { background: linear-gradient(180deg, #c8202f, #9a1522); color: #fff; padding: 16px 14px 14px; }
+  #revive .top h2 { font-size: 21px; font-weight: 700; }
+  #revive .top p { font-size: 14px; opacity: .9; margin-top: 4px; }
+  #revive .body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+  #revive .layer { font-size: 15px; }
+  #revive .layer b { font-size: 26px; color: #c8202f; display: block; }
+  #revive button { border: none; border-radius: 24px; font-size: 16px; cursor: pointer; padding: 12px 16px; }
+  #reviveYes { background: linear-gradient(180deg, #3fa45a, #2a7a3f); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(42,122,63,.4); }
+  #reviveNo { background: transparent; color: #8a6a50; padding: 6px; font-size: 14px; }
+  #reviveMsg { font-size: 13px; color: #c8202f; min-height: 16px; }
+  #fakeAd { position: fixed; inset: 0; z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; background: #111; color: #fff; font-size: 16px; }
+  #fakeAd .tag { font-size: 12px; background: #ffd25a; color: #222; padding: 3px 8px; border-radius: 6px; }
   #bestLine { font-size: 15px; opacity: .8; }
 </style>
 </head>
@@ -74,10 +92,22 @@
       <footer id="boardFoot">Your Telegram name, photo and best score are shown on this board.</footer>
     </div>
   </div>
+  <div id="revive" role="dialog" aria-label="Continue">
+    <div class="card">
+      <div class="top"><h2>Santa can save your cake!</h2><p>Watch a short ad and keep stacking.</p></div>
+      <div class="body">
+        <div class="layer">Your cake is <b id="reviveScore">0</b> layers tall</div>
+        <button id="reviveYes">▶ Watch ad &amp; continue</button>
+        <div id="reviveMsg"></div>
+        <button id="reviveNo">No thanks</button>
+      </div>
+    </div>
+  </div>
+  <div id="fakeAd"><span class="tag">DEMO AD</span><div>This is where the ad will play</div><div id="fakeAdCount">3</div></div>
   <button id="muteBtn" aria-label="Toggle sound"></button>
   <div id="hud"><div id="score">0</div><div id="combo"></div></div>
   <div id="overlay">
-    <h1 id="title">Happy Cake</h1>
+    <h1 id="title">HAPPY CAKE</h1>
     <p id="sub">Tap to drop each cake layer.<br>Line them up to build the tallest cake!</p>
     <div id="bestLine"></div>
     <button id="startBtn">Start</button>
@@ -354,15 +384,67 @@ function showCombo(text) {
   clearTimeout(comboTimer); comboTimer = setTimeout(() => el.style.opacity = 0, 700);
 }
 
+let revived = false, reviveTimer = null;
+
+// Trượt hẳn: dừng lại, mời Santa cứu bánh (mỗi ván 1 lần) hoặc kết thúc
 function gameOver() {
   running = false; falling = true;
   hap.fail();
+  Sound.stopMusic(); Sound.slice();
+  if (!revived && score > 0 && Ads.available()) {
+    santaReact('sad', 0, 'Save my cake?');
+    santa.bubbleUntil = Infinity;
+    setTimeout(showRevive, 800);
+  } else {
+    finishGame();
+  }
+}
+
+function showRevive() {
+  $('reviveScore').textContent = score;
+  $('reviveMsg').textContent = '';
+  $('reviveYes').disabled = false;
+  $('revive').style.display = 'flex';
+  let left = 8;
+  const tick = () => { $('reviveNo').textContent = `No thanks (${left})`; if (left-- <= 0) declineRevive(); };
+  tick(); clearInterval(reviveTimer); reviveTimer = setInterval(tick, 1000);
+}
+function hideRevive() { clearInterval(reviveTimer); $('revive').style.display = 'none'; }
+
+async function acceptRevive() {
+  clearInterval(reviveTimer);
+  $('reviveNo').textContent = 'No thanks';
+  $('reviveYes').disabled = true;
+  try {
+    await Ads.show();                 // chỉ tiếp tục khi xem hết quảng cáo
+    hideRevive();
+    revived = true;
+    falling = false; running = true; combo = 0;
+    newBlock();
+    santaReact('happy', 1400, 'Ho ho ho!');
+    Sound.unlock(); Sound.hoho(); Sound.startMusic();
+    showCombo('KEEP STACKING!');
+  } catch (e) {
+    $('reviveMsg').textContent = 'No ad available right now.';
+    $('reviveYes').disabled = false;
+    setTimeout(declineRevive, 1500);
+  }
+}
+function declineRevive() {
+  if ($('revive').style.display === 'none') return;
+  hideRevive();
+  finishGame();
+}
+
+// Kết thúc ván: buồn, lưu điểm, hiện màn hình chơi lại
+function finishGame() {
+  running = false; falling = true;
   santaReact('sad', 0, 'Oh no...');
-  Sound.stopMusic(); Sound.fail();
+  santa.bubbleUntil = Infinity;
+  Sound.fail();
   if (score > 0 && score > best) setTimeout(() => Sound.newBest(), 1700);
   Board.submit(score, Date.now() - startTime);
   document.getElementById('boardBtn').style.display = 'flex';
-  santa.bubbleUntil = Infinity;
   if (score > best) { best = score; saveBest(best); }
   setTimeout(() => {
     falling = false;
@@ -376,7 +458,7 @@ function gameOver() {
 }
 
 function start() {
-  reset(); running = true;
+  reset(); running = true; revived = false; hideRevive();
   santa.mood = 'idle'; santa.bubble = '';
   Sound.unlock(); Sound.start(); Sound.startMusic();
   startTime = Date.now(); Board.close();
@@ -1111,6 +1193,8 @@ const CONFIG = {
   SCORE_URL: 'https://qjgdjueccrjqqvpidijf.supabase.co/functions/v1/game-score',            // ví dụ: https://abcdxyz.supabase.co/functions/v1/game-score
   ANON_KEY: '',             // Supabase > Project Settings > API Keys > anon / publishable (khóa công khai)
   GAME: 'cake-stack',
+  ADS_BLOCK_ID: '60835',         // AdsGram > Ad block (Rewarded) > Copy BlockID, ví dụ '12345'
+  ADS_DEBUG: true,          // true = AdsGram hiện quảng cáo thử (khi đang kiểm tra)
   LIMIT: 20,
 };
 const Board = (() => {
@@ -1189,6 +1273,37 @@ const Board = (() => {
   };
 })();
 
+
+// ---------- Quảng cáo có thưởng (AdsGram) ----------
+const Ads = (() => {
+  let ctrl = null;
+  function controller() {
+    if (ctrl) return ctrl;
+    if (CONFIG.ADS_BLOCK_ID && window.Adsgram) {
+      try { ctrl = window.Adsgram.init({ blockId: String(CONFIG.ADS_BLOCK_ID), debug: !!CONFIG.ADS_DEBUG }); } catch (e) { ctrl = null; }
+    }
+    return ctrl;
+  }
+  // Ngoài Telegram và chưa có BlockID: chạy quảng cáo giả để xem thử luồng
+  const demo = () => !CONFIG.ADS_BLOCK_ID && !inTelegram;
+  function fakeAd() {
+    return new Promise(resolve => {
+      const box = document.getElementById('fakeAd'), cnt = document.getElementById('fakeAdCount');
+      let n = 3; cnt.textContent = n; box.style.display = 'flex';
+      const t = setInterval(() => { n--; cnt.textContent = n; if (n <= 0) { clearInterval(t); box.style.display = 'none'; resolve({ done: true }); } }, 1000);
+    });
+  }
+  return {
+    available() { return !!controller() || demo(); },
+    show() {
+      const c = controller();
+      if (c) return c.show();          // resolve khi xem hết, reject khi bỏ qua / lỗi / hết quảng cáo
+      if (demo()) return fakeAd();
+      return Promise.reject({ error: true, description: 'Ads not set up' });
+    },
+  };
+})();
+
 // ---------- Điều khiển ----------
 // Nút bật/tắt âm thanh
 const ICON_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
@@ -1200,6 +1315,10 @@ document.getElementById('openBoard').addEventListener('click', e => { e.stopProp
 document.getElementById('boardClose').addEventListener('click', () => Board.close());
 document.getElementById('board').addEventListener('click', e => { if (e.target.id === 'board') Board.close(); });
 document.getElementById('board').addEventListener('pointerdown', e => e.stopPropagation());
+
+document.getElementById('reviveYes').addEventListener('click', e => { e.stopPropagation(); acceptRevive(); });
+document.getElementById('reviveNo').addEventListener('click', e => { e.stopPropagation(); declineRevive(); });
+['revive', 'fakeAd'].forEach(id => document.getElementById(id).addEventListener('pointerdown', e => e.stopPropagation()));
 const muteBtn = document.getElementById('muteBtn');
 muteBtn.innerHTML = Sound.muted ? ICON_OFF : ICON_ON;
 muteBtn.addEventListener('pointerdown', e => e.stopPropagation());
