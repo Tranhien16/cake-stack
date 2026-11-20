@@ -79,6 +79,12 @@
   #fakeAd { position: fixed; inset: 0; z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center;
     gap: 10px; background: #111; color: #fff; font-size: 16px; }
   #fakeAd .tag { font-size: 12px; background: #ffd25a; color: #222; padding: 3px 8px; border-radius: 6px; }
+  #shareBtn { background: linear-gradient(180deg, #ffd25a, #e3a92e) !important; color: #4a2f08 !important; font-weight: 600; }
+  #inviteLine { font-size: 13px; text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.6); text-align: center; padding: 0 24px; line-height: 1.5; }
+  #inviteLine b { color: #ffe17a; }
+  #reviveFree { background: linear-gradient(180deg, #ffd25a, #e3a92e); color: #4a2f08; font-weight: 600; box-shadow: 0 4px 12px rgba(227,169,46,.4); }
+  #toast { position: fixed; left: 50%; bottom: 12%; transform: translateX(-50%); z-index: 30; background: rgba(20,24,48,.92); color: #fff;
+    padding: 10px 18px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 86vw; text-align: center; }
   #bestLine { font-size: 15px; opacity: .8; }
 </style>
 </head>
@@ -94,15 +100,17 @@
   </div>
   <div id="revive" role="dialog" aria-label="Continue">
     <div class="card">
-      <div class="top"><h2>Santa can save your cake!</h2><p>Watch a short ad and keep stacking.</p></div>
+      <div class="top"><h2>Santa can save your cake!</h2><p id="reviveSub">Watch a short ad and keep stacking.</p></div>
       <div class="body">
         <div class="layer">Your cake is <b id="reviveScore">0</b> layers tall</div>
+        <button id="reviveFree" style="display:none">🎁 Free revive</button>
         <button id="reviveYes">▶ Watch ad &amp; continue</button>
         <div id="reviveMsg"></div>
         <button id="reviveNo">No thanks</button>
       </div>
     </div>
   </div>
+  <div id="toast"></div>
   <div id="fakeAd"><span class="tag">DEMO AD</span><div>This is where the ad will play</div><div id="fakeAdCount">3</div></div>
   <button id="muteBtn" aria-label="Toggle sound"></button>
   <div id="hud"><div id="score">0</div><div id="combo"></div></div>
@@ -111,7 +119,9 @@
     <p id="sub">Tap to drop each cake layer.<br>Line them up to build the tallest cake!</p>
     <div id="bestLine"></div>
     <button id="startBtn">Start</button>
+    <button id="shareBtn">Invite friends</button>
     <button id="openBoard" class="secondary">Leaderboard</button>
+    <div id="inviteLine"></div>
   </div>
 
 <script>
@@ -391,7 +401,7 @@ function gameOver() {
   running = false; falling = true;
   hap.fail();
   Sound.stopMusic(); Sound.slice();
-  if (!revived && score > 0 && Ads.available()) {
+  if (!revived && score > 0 && (Ads.available() || Social.tokens > 0)) {
     santaReact('sad', 0, 'Save my cake?');
     santa.bubbleUntil = Infinity;
     setTimeout(showRevive, 800);
@@ -404,6 +414,13 @@ function showRevive() {
   $('reviveScore').textContent = score;
   $('reviveMsg').textContent = '';
   $('reviveYes').disabled = false;
+  $('reviveYes').style.display = Ads.available() ? '' : 'none';
+  $('reviveFree').disabled = false;
+  $('reviveFree').style.display = Social.tokens > 0 ? '' : 'none';
+  $('reviveFree').textContent = `🎁 Free revive (${Social.tokens} left)`;
+  $('reviveSub').textContent = Social.tokens > 0
+    ? (Ads.available() ? 'Use a free revive or watch a short ad.' : 'Use your free revive and keep stacking.')
+    : 'Watch a short ad and keep stacking.';
   $('revive').style.display = 'flex';
   let left = 8;
   const tick = () => { $('reviveNo').textContent = `No thanks (${left})`; if (left-- <= 0) declineRevive(); };
@@ -411,25 +428,42 @@ function showRevive() {
 }
 function hideRevive() { clearInterval(reviveTimer); $('revive').style.display = 'none'; }
 
+function doRevive() {
+  hideRevive();
+  revived = true;
+  falling = false; running = true; combo = 0;
+  newBlock();
+  santaReact('happy', 1400, 'Ho ho ho!');
+  Sound.unlock(); Sound.hoho(); Sound.startMusic();
+  showCombo('KEEP STACKING!');
+}
+
 async function acceptRevive() {
   clearInterval(reviveTimer);
   $('reviveNo').textContent = 'No thanks';
-  $('reviveYes').disabled = true;
+  $('reviveYes').disabled = true; $('reviveFree').disabled = true;
   try {
     await Ads.show();                 // chỉ tiếp tục khi xem hết quảng cáo
-    hideRevive();
-    revived = true;
-    falling = false; running = true; combo = 0;
-    newBlock();
-    santaReact('happy', 1400, 'Ho ho ho!');
-    Sound.unlock(); Sound.hoho(); Sound.startMusic();
-    showCombo('KEEP STACKING!');
+    doRevive();
   } catch (e) {
     $('reviveMsg').textContent = 'No ad available right now.';
-    $('reviveYes').disabled = false;
-    setTimeout(declineRevive, 1500);
+    $('reviveYes').disabled = false; $('reviveFree').disabled = false;
+    if (Social.tokens <= 0) setTimeout(declineRevive, 1500);
   }
 }
+
+async function useFreeRevive() {
+  clearInterval(reviveTimer);
+  $('reviveNo').textContent = 'No thanks';
+  $('reviveYes').disabled = true; $('reviveFree').disabled = true;
+  if (await Social.useToken()) { doRevive(); toast('Free revive used 🎁'); }
+  else {
+    $('reviveMsg').textContent = 'Couldn\'t use a free revive. Try the ad instead.';
+    $('reviveFree').style.display = 'none'; $('reviveYes').disabled = false;
+    if (!Ads.available()) setTimeout(declineRevive, 1500);
+  }
+}
+
 function declineRevive() {
   if ($('revive').style.display === 'none') return;
   hideRevive();
@@ -452,6 +486,7 @@ function finishGame() {
     $('sub').innerHTML = score > 0 && score >= best ? 'New best!' : 'Try again!';
     $('bestLine').textContent = 'Best: ' + best;
     $('startBtn').textContent = 'Play again';
+    Social.render();
     $('overlay').style.display = 'flex';
     if (inTelegram) { tg.MainButton.setText('Play again'); tg.MainButton.show(); }
   }, 900);
@@ -1193,8 +1228,9 @@ const CONFIG = {
   SCORE_URL: 'https://qjgdjueccrjqqvpidijf.supabase.co/functions/v1/game-score',            // ví dụ: https://abcdxyz.supabase.co/functions/v1/game-score
   ANON_KEY: '',             // Supabase > Project Settings > API Keys > anon / publishable (khóa công khai)
   GAME: 'cake-stack',
+  BOT_LINK: 'https://t.me/cakestack_bot/play',   // link Mini App (BotFather /newapp)
   ADS_BLOCK_ID: '60835',         // AdsGram > Ad block (Rewarded) > Copy BlockID, ví dụ '12345'
-  ADS_DEBUG: false,          // true = AdsGram hiện quảng cáo thử (khi đang kiểm tra)
+  ADS_DEBUG: false,         // true = AdsGram hiện quảng cáo thử (khi đang kiểm tra)
   LIMIT: 20,
 };
 const Board = (() => {
@@ -1274,6 +1310,77 @@ const Board = (() => {
 })();
 
 
+
+// ---------- Mời bạn bè, thách đấu, nguồn người chơi ----------
+function toast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.style.opacity = 1;
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.style.opacity = 0, 2600);
+}
+const Social = (() => {
+  const st = { id: null, tokens: 0, invited: 0 };
+  const myId = () => st.id || (inTelegram && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null);
+  async function call(action) {
+    const h = { 'Content-Type': 'application/json' };
+    if (CONFIG.ANON_KEY) { h.apikey = CONFIG.ANON_KEY; h.Authorization = 'Bearer ' + CONFIG.ANON_KEY; }
+    const r = await fetch(CONFIG.SCORE_URL, { method: 'POST', headers: h,
+      body: JSON.stringify({ action, game: CONFIG.GAME, initData: tg.initData }) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }
+  function link() {
+    const id = myId();
+    return CONFIG.BOT_LINK + (id ? '?startapp=ref_' + id : '');
+  }
+  function render() {
+    const line = document.getElementById('inviteLine');
+    const btn = document.getElementById('shareBtn');
+    btn.textContent = score > 0 && !running ? 'Challenge a friend' : 'Invite friends';
+    if (!inTelegram) { line.textContent = ''; return; }
+    line.innerHTML = '';
+    line.append('Invite a friend: you both get a free Santa revive 🎁');
+    if (st.invited || st.tokens) {
+      line.append(document.createElement('br'));
+      const a = document.createElement('b'); a.textContent = st.invited;
+      const b = document.createElement('b'); b.textContent = st.tokens;
+      line.append('Friends joined: ', a, ' · Free revives: ', b);
+    }
+  }
+  return {
+    get tokens() { return st.tokens; },
+    render,
+    async hello() {
+      render();
+      if (!inTelegram || !CONFIG.SCORE_URL) return;
+      try {
+        const d = await call('hello');
+        st.id = d.id; st.tokens = d.tokens || 0; st.invited = d.invited || 0;
+        if (d.isNew && (tg.initDataUnsafe.start_param || '').startsWith('ref_') && st.tokens > 0)
+          toast('Welcome! Your friend gave you a free Santa revive 🎁');
+        render();
+      } catch (e) {}
+    },
+    async useToken() {
+      if (!inTelegram || !CONFIG.SCORE_URL || st.tokens <= 0) return false;
+      try { const d = await call('use_token'); st.tokens = d.tokens || 0; render(); return !!d.ok; }
+      catch (e) { return false; }
+    },
+    async share() {
+      const challenge = score > 0 && !running;
+      const text = challenge
+        ? `I stacked ${score} layers in Happy Cake 🎂🎅 Can you beat me?`
+        : 'Come stack Christmas cakes with me in Happy Cake 🎂🎅 We both get a free Santa revive!';
+      const url = link();
+      if (inTelegram && tg.openTelegramLink) {
+        tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text));
+        return;
+      }
+      try { if (navigator.share) { await navigator.share({ text, url }); return; } } catch (e) { return; }
+      try { await navigator.clipboard.writeText(text + ' ' + url); toast('Link copied. Paste it to a friend!'); }
+      catch (e) { toast(url); }
+    },
+  };
+})();
+
 // ---------- Quảng cáo có thưởng (AdsGram) ----------
 const Ads = (() => {
   let ctrl = null;
@@ -1317,6 +1424,8 @@ document.getElementById('board').addEventListener('click', e => { if (e.target.i
 document.getElementById('board').addEventListener('pointerdown', e => e.stopPropagation());
 
 document.getElementById('reviveYes').addEventListener('click', e => { e.stopPropagation(); acceptRevive(); });
+document.getElementById('reviveFree').addEventListener('click', e => { e.stopPropagation(); useFreeRevive(); });
+document.getElementById('shareBtn').addEventListener('click', e => { e.stopPropagation(); Social.share(); });
 document.getElementById('reviveNo').addEventListener('click', e => { e.stopPropagation(); declineRevive(); });
 ['revive', 'fakeAd'].forEach(id => document.getElementById(id).addEventListener('pointerdown', e => e.stopPropagation()));
 const muteBtn = document.getElementById('muteBtn');
@@ -1338,6 +1447,7 @@ document.addEventListener('keydown', e => {
 
 reset(); running = false;
 loadBest(v => { best = v; $('bestLine').textContent = best ? 'Best: ' + best : ''; });
+Social.hello();
 requestAnimationFrame(frame);
 </script>
 </body>
