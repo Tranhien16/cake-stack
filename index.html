@@ -82,6 +82,24 @@
   #shareBtn { background: linear-gradient(180deg, #ffd25a, #e3a92e) !important; color: #4a2f08 !important; font-weight: 600; }
   #inviteLine { font-size: 13px; text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.6); text-align: center; padding: 0 24px; line-height: 1.5; }
   #inviteLine b { color: #ffe17a; }
+  #shareBtn small { display: block; font-size: 12px; font-weight: 500; opacity: .85; margin-top: 1px; }
+  #howLink { background: none !important; box-shadow: none !important; border: none !important; color: #ffe17a !important;
+    text-decoration: underline; font-size: 13px !important; padding: 2px 6px !important; margin-top: 0 !important; }
+  #reviveHint { font-size: 13px; color: #8a6a50; background: #fff1d6; border-radius: 10px; padding: 8px 10px; line-height: 1.4; }
+  #howInvite { position: fixed; inset: 0; z-index: 11; display: none; align-items: center; justify-content: center; background: rgba(15,18,38,.6); }
+  #howInvite .card { width: min(88vw, 340px); background: #fff8ee; color: #4a2f20; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,.45); animation: pop .25s ease-out; }
+  #howInvite .top { background: linear-gradient(180deg, #e3a92e, #b8801a); color: #fff; padding: 16px; text-align: center; }
+  #howInvite .top h2 { font-size: 20px; font-weight: 700; }
+  #howInvite ol { list-style: none; padding: 14px 18px 4px; display: flex; flex-direction: column; gap: 12px; }
+  #howInvite li { display: flex; gap: 12px; align-items: center; font-size: 15px; line-height: 1.35; }
+  #howInvite li span { flex: none; width: 30px; height: 30px; border-radius: 50%; background: #c8202f; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  #howInvite .note { font-size: 12px; color: #8a6a50; padding: 6px 18px 0; text-align: center; }
+  #howInvite .btns { display: flex; flex-direction: column; gap: 8px; padding: 14px 18px 18px; }
+  #howInvite button { border: none; border-radius: 24px; font-size: 16px; padding: 12px; cursor: pointer; }
+  #howShare { background: linear-gradient(180deg, #ffd25a, #e3a92e); color: #4a2f08; font-weight: 600; }
+  #howClose { background: transparent; color: #8a6a50; font-size: 14px !important; padding: 6px !important; }
   #reviveFree { background: linear-gradient(180deg, #ffd25a, #e3a92e); color: #4a2f08; font-weight: 600; box-shadow: 0 4px 12px rgba(227,169,46,.4); }
   #toast { position: fixed; left: 50%; bottom: 12%; transform: translateX(-50%); z-index: 30; background: rgba(20,24,48,.92); color: #fff;
     padding: 10px 18px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 86vw; text-align: center; }
@@ -105,12 +123,25 @@
         <div class="layer">Your cake is <b id="reviveScore">0</b> layers tall</div>
         <button id="reviveFree" style="display:none">🎁 Free revive</button>
         <button id="reviveYes">▶ Watch ad &amp; continue</button>
+        <div id="reviveHint" style="display:none">Out of free revives? <b>Invite a friend</b> after this game. You both get one! 🎁</div>
         <div id="reviveMsg"></div>
         <button id="reviveNo">No thanks</button>
       </div>
     </div>
   </div>
   <div id="toast"></div>
+  <div id="howInvite" role="dialog" aria-label="How free revives work">
+    <div class="card">
+      <div class="top"><h2>🎁 Get free Santa revives</h2></div>
+      <ol>
+        <li><span>1</span><div>Tap <b>Invite friends</b> and send the link to a friend.</div></li>
+        <li><span>2</span><div>Your friend opens Happy Cake from your link.</div></li>
+        <li><span>3</span><div><b>You both get +1 free revive.</b> Use it when your cake falls, no ad needed!</div></li>
+      </ol>
+      <div class="note">Works for friends who haven't played Happy Cake before. No limit: every new friend = +1 revive.</div>
+      <div class="btns"><button id="howShare">Invite friends now</button><button id="howClose">Maybe later</button></div>
+    </div>
+  </div>
   <div id="fakeAd"><span class="tag">DEMO AD</span><div>This is where the ad will play</div><div id="fakeAdCount">3</div></div>
   <button id="muteBtn" aria-label="Toggle sound"></button>
   <div id="hud"><div id="score">0</div><div id="combo"></div></div>
@@ -122,6 +153,7 @@
     <button id="shareBtn">Invite friends</button>
     <button id="openBoard" class="secondary">Leaderboard</button>
     <div id="inviteLine"></div>
+    <button id="howLink">How do free revives work?</button>
   </div>
 
 <script>
@@ -418,6 +450,7 @@ function showRevive() {
   $('reviveFree').disabled = false;
   $('reviveFree').style.display = Social.tokens > 0 ? '' : 'none';
   $('reviveFree').textContent = `🎁 Free revive (${Social.tokens} left)`;
+  $('reviveHint').style.display = inTelegram && Social.tokens <= 0 ? '' : 'none';
   $('reviveSub').textContent = Social.tokens > 0
     ? (Ads.available() ? 'Use a free revive or watch a short ad.' : 'Use your free revive and keep stacking.')
     : 'Watch a short ad and keep stacking.';
@@ -487,6 +520,7 @@ function finishGame() {
     $('bestLine').textContent = 'Best: ' + best;
     $('startBtn').textContent = 'Play again';
     Social.render();
+    Social.maybeShowHowTo();
     $('overlay').style.display = 'flex';
     if (inTelegram) { tg.MainButton.setText('Play again'); tg.MainButton.show(); }
   }, 900);
@@ -1316,6 +1350,18 @@ function toast(msg) {
   const t = document.getElementById('toast'); t.textContent = msg; t.style.opacity = 1;
   clearTimeout(toast._t); toast._t = setTimeout(() => t.style.opacity = 0, 2600);
 }
+const kv = {
+  get(k) {
+    return new Promise(res => {
+      if (inTelegram && tg.CloudStorage) tg.CloudStorage.getItem(k, (e, v) => res(e || v === '' || v == null ? null : Number(v)));
+      else { try { const v = localStorage.getItem(k); res(v == null ? null : Number(v)); } catch (e) { res(null); } }
+    });
+  },
+  set(k, v) {
+    if (inTelegram && tg.CloudStorage) tg.CloudStorage.setItem(k, String(v));
+    else { try { localStorage.setItem(k, v); } catch (e) {} }
+  },
+};
 const Social = (() => {
   const st = { id: null, tokens: 0, invited: 0 };
   const myId = () => st.id || (inTelegram && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null);
@@ -1334,10 +1380,12 @@ const Social = (() => {
   function render() {
     const line = document.getElementById('inviteLine');
     const btn = document.getElementById('shareBtn');
-    btn.textContent = score > 0 && !running ? 'Challenge a friend' : 'Invite friends';
+    btn.innerHTML = '';
+    btn.append(score > 0 && !running ? 'Challenge a friend' : 'Invite friends');
+    if (inTelegram) { const sm = document.createElement('small'); sm.textContent = '🎁 +1 free revive for you & your friend'; btn.append(sm); }
+    document.getElementById('howLink').style.display = inTelegram ? '' : 'none';
     if (!inTelegram) { line.textContent = ''; return; }
     line.innerHTML = '';
-    line.append('Invite a friend: you both get a free Santa revive 🎁');
     if (st.invited || st.tokens) {
       line.append(document.createElement('br'));
       const a = document.createElement('b'); a.textContent = st.invited;
@@ -1345,15 +1393,28 @@ const Social = (() => {
       line.append('Friends joined: ', a, ' · Free revives: ', b);
     }
   }
+  // Hướng dẫn: hiện 1 lần sau ván đầu tiên
+  async function maybeShowHowTo() {
+    if (!inTelegram || !CONFIG.SCORE_URL) return;
+    if (await kv.get('cakeHowSeen')) return;
+    kv.set('cakeHowSeen', 1);
+    setTimeout(() => { document.getElementById('howInvite').style.display = 'flex'; }, 1400);
+  }
   return {
     get tokens() { return st.tokens; },
-    render,
+    render, maybeShowHowTo,
     async hello() {
       render();
       if (!inTelegram || !CONFIG.SCORE_URL) return;
       try {
         const d = await call('hello');
         st.id = d.id; st.tokens = d.tokens || 0; st.invited = d.invited || 0;
+        const seen = await kv.get('cakeInvitedSeen');
+        if (seen !== null && st.invited > seen) {
+          const n = st.invited - seen;
+          setTimeout(() => toast(`🎉 ${n} friend${n > 1 ? 's' : ''} joined from your invite! +${n} free revive${n > 1 ? 's' : ''}`), 1200);
+        }
+        kv.set('cakeInvitedSeen', st.invited);
         if (d.isNew && (tg.initDataUnsafe.start_param || '').startsWith('ref_') && st.tokens > 0)
           toast('Welcome! Your friend gave you a free Santa revive 🎁');
         render();
@@ -1372,6 +1433,7 @@ const Social = (() => {
       const url = link();
       if (inTelegram && tg.openTelegramLink) {
         tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text));
+        setTimeout(() => toast("Sent? You'll get +1 free revive when your friend opens the game 🎁"), 900);
         return;
       }
       try { if (navigator.share) { await navigator.share({ text, url }); return; } } catch (e) { return; }
@@ -1426,6 +1488,10 @@ document.getElementById('board').addEventListener('pointerdown', e => e.stopProp
 document.getElementById('reviveYes').addEventListener('click', e => { e.stopPropagation(); acceptRevive(); });
 document.getElementById('reviveFree').addEventListener('click', e => { e.stopPropagation(); useFreeRevive(); });
 document.getElementById('shareBtn').addEventListener('click', e => { e.stopPropagation(); Social.share(); });
+document.getElementById('howLink').addEventListener('click', e => { e.stopPropagation(); document.getElementById('howInvite').style.display = 'flex'; });
+document.getElementById('howShare').addEventListener('click', e => { e.stopPropagation(); document.getElementById('howInvite').style.display = 'none'; Social.share(); });
+document.getElementById('howClose').addEventListener('click', e => { e.stopPropagation(); document.getElementById('howInvite').style.display = 'none'; });
+document.getElementById('howInvite').addEventListener('pointerdown', e => e.stopPropagation());
 document.getElementById('reviveNo').addEventListener('click', e => { e.stopPropagation(); declineRevive(); });
 ['revive', 'fakeAd'].forEach(id => document.getElementById(id).addEventListener('pointerdown', e => e.stopPropagation()));
 const muteBtn = document.getElementById('muteBtn');
