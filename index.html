@@ -19,7 +19,7 @@
   #combo { font-size: 18px; height: 24px; opacity: 0; transition: opacity .2s; letter-spacing: 2px; color: #ffe17a; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
   #overlay {
     position: fixed; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 14px; background: rgba(20,24,48,.38);
+    align-items: center; justify-content: safe center; gap: 10px; background: rgba(20,24,48,.38); overflow-y: auto; padding: 16px 0;
   }
   #overlay h1 { font-size: 40px; font-weight: 300; letter-spacing: 3px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
   #overlay p { opacity: .85; font-size: 15px; text-align: center; padding: 0 20px; }
@@ -100,6 +100,22 @@
   #howInvite button { border: none; border-radius: 24px; font-size: 16px; padding: 12px; cursor: pointer; }
   #howShare { background: linear-gradient(180deg, #ffd25a, #e3a92e); color: #4a2f08; font-weight: 600; }
   #howClose { background: transparent; color: #8a6a50; font-size: 14px !important; padding: 6px !important; }
+  #dailyCard { width: min(86vw, 330px); background: rgba(255,248,238,.95); color: #4a2f20; border-radius: 14px; padding: 9px 12px;
+    display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+  #dailyCard .ic { font-size: 24px; }
+  #dailyCard .tx { flex: 1; font-size: 13px; line-height: 1.35; text-align: left; }
+  #dailyCard .tx b { font-size: 14px; }
+  #dailyCard .chip { font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 10px; background: #ffe2b0; color: #8a4a10; white-space: nowrap; }
+  #dailyCard.done .chip { background: #cfeed5; color: #1f6b33; }
+  #dailyHud { font-size: 13px; margin-top: 2px; opacity: .95; text-shadow: 0 1px 4px rgba(0,0,0,.7); }
+  #dailyHud.done { color: #9ff0b0; }
+  .row2 { display: flex; gap: 8px; }
+
+  #homeBanner { display: none; width: min(86vw, 330px); background: rgba(20,24,48,.85); border: 1px solid rgba(255,255,255,.25); border-radius: 14px;
+    padding: 8px 10px; align-items: center; gap: 8px; font-size: 13px; }
+  #homeBanner span { flex: 1; text-align: left; }
+  #homeAdd { background: #fff6ea !important; color: #5a3a28 !important; padding: 6px 12px !important; font-size: 13px !important; margin: 0 !important; box-shadow: none !important; }
+  #homeX { background: none !important; color: #fff !important; padding: 4px 6px !important; font-size: 16px !important; margin: 0 !important; box-shadow: none !important; border: none !important; }
   #reviveFree { background: linear-gradient(180deg, #ffd25a, #e3a92e); color: #4a2f08; font-weight: 600; box-shadow: 0 4px 12px rgba(227,169,46,.4); }
   #toast { position: fixed; left: 50%; bottom: 12%; transform: translateX(-50%); z-index: 30; background: rgba(20,24,48,.92); color: #fff;
     padding: 10px 18px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 86vw; text-align: center; }
@@ -144,16 +160,18 @@
   </div>
   <div id="fakeAd"><span class="tag">DEMO AD</span><div>This is where the ad will play</div><div id="fakeAdCount">3</div></div>
   <button id="muteBtn" aria-label="Toggle sound"></button>
-  <div id="hud"><div id="score">0</div><div id="combo"></div></div>
+  <div id="hud"><div id="score">0</div><div id="combo"></div><div id="dailyHud"></div></div>
   <div id="overlay">
     <h1 id="title">HAPPY CAKE</h1>
     <p id="sub">Tap to drop each cake layer.<br>Line them up to build the tallest cake!</p>
     <div id="bestLine"></div>
+    <div id="dailyCard" style="display:none"><div class="ic">🎯</div><div class="tx"></div><div class="chip"></div></div>
     <button id="startBtn">Start</button>
     <button id="shareBtn">Invite friends</button>
-    <button id="openBoard" class="secondary">Leaderboard</button>
+    <div class="row2"><button id="openBoard" class="secondary">Leaderboard</button><button id="storyBtn" class="secondary" style="display:none">📸 Story</button></div>
     <div id="inviteLine"></div>
     <button id="howLink">How do free revives work?</button>
+    <div id="homeBanner"><span>📲 Add Happy Cake to your home screen</span><button id="homeAdd">Add</button><button id="homeX" aria-label="Dismiss">✕</button></div>
   </div>
 
 <script>
@@ -390,6 +408,7 @@ function drop() {
       cur[size] += grow; cur[axis] -= grow / 2;
     }
     rings.push({ ...cur, t: 0 });
+    runPerfects++; runBestCombo = Math.max(runBestCombo, combo);
     showCombo(combo >= 2 ? `PERFECT ×${combo}` : 'PERFECT');
     santaReact('happy', 1000, combo >= 3 ? 'Awesome!' : 'Ho ho ho!');
     Sound.perfect(combo); if (combo < 3 || combo % 3 === 0) Sound.hoho();
@@ -416,6 +435,7 @@ function drop() {
   score = stack.length - 1;
   $('score').textContent = score;
   speed = Math.min(5, 2.2 + score * 0.06);
+  Daily.check();
   axis = axis === 'x' ? 'z' : 'x';
   newBlock();
 }
@@ -426,7 +446,7 @@ function showCombo(text) {
   clearTimeout(comboTimer); comboTimer = setTimeout(() => el.style.opacity = 0, 700);
 }
 
-let revived = false, reviveTimer = null;
+let revived = false, reviveTimer = null, runPerfects = 0, runBestCombo = 0;
 
 // Trượt hẳn: dừng lại, mời Santa cứu bánh (mỗi ván 1 lần) hoặc kết thúc
 function gameOver() {
@@ -516,11 +536,13 @@ function finishGame() {
   setTimeout(() => {
     falling = false;
     $('title').textContent = score;
-    $('sub').innerHTML = score > 0 && score >= best ? 'New best!' : 'Try again!';
-    $('bestLine').textContent = 'Best: ' + best;
+    $('sub').innerHTML = (score > 0 && score >= best ? 'New best!' : 'Try again!') + ' · Best: ' + best;
+    $('bestLine').textContent = '';
     $('startBtn').textContent = 'Play again';
     Social.render();
     Social.maybeShowHowTo();
+    Daily.render();
+    Extras.afterGame();
     $('overlay').style.display = 'flex';
     if (inTelegram) { tg.MainButton.setText('Play again'); tg.MainButton.show(); }
   }, 900);
@@ -528,6 +550,7 @@ function finishGame() {
 
 function start() {
   reset(); running = true; revived = false; hideRevive();
+  runPerfects = 0; runBestCombo = 0; Daily.renderHud();
   santa.mood = 'idle'; santa.bubble = '';
   Sound.unlock(); Sound.start(); Sound.startMusic();
   startTime = Date.now(); Board.close();
@@ -1032,6 +1055,7 @@ function drawSanta(now) {
 
 function drawSantaBubble(now) {
   if (!santa.anchor || !santa.bubble || now >= santa.bubbleUntil) return;
+  if (document.getElementById('overlay').style.display === 'flex') return;   // màn hình kết quả đang hiện: không che chữ
   const [ax, ay] = santa.anchor;
   const fs = Math.max(13, Math.min(18, W * 0.04));
   ctx.font = `600 ${fs}px system-ui, sans-serif`;
@@ -1263,6 +1287,7 @@ const CONFIG = {
   ANON_KEY: '',             // Supabase > Project Settings > API Keys > anon / publishable (khóa công khai)
   GAME: 'cake-stack',
   BOT_LINK: 'https://t.me/cakestack_bot/play',   // link Mini App (BotFather /newapp)
+  STORY_IMAGE: 'https://tranhien16.github.io/cake-stack/story.jpg', // ảnh nền Story (upload story.jpg lên repo)
   ADS_BLOCK_ID: '60835',         // AdsGram > Ad block (Rewarded) > Copy BlockID, ví dụ '12345'
   ADS_DEBUG: false,         // true = AdsGram hiện quảng cáo thử (khi đang kiểm tra)
   LIMIT: 20,
@@ -1365,11 +1390,11 @@ const kv = {
 const Social = (() => {
   const st = { id: null, tokens: 0, invited: 0 };
   const myId = () => st.id || (inTelegram && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null);
-  async function call(action) {
+  async function call(action, extra) {
     const h = { 'Content-Type': 'application/json' };
     if (CONFIG.ANON_KEY) { h.apikey = CONFIG.ANON_KEY; h.Authorization = 'Bearer ' + CONFIG.ANON_KEY; }
     const r = await fetch(CONFIG.SCORE_URL, { method: 'POST', headers: h,
-      body: JSON.stringify({ action, game: CONFIG.GAME, initData: tg.initData }) });
+      body: JSON.stringify({ action, game: CONFIG.GAME, initData: tg.initData, ...(extra || {}) }) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }
@@ -1402,6 +1427,9 @@ const Social = (() => {
   }
   return {
     get tokens() { return st.tokens; },
+    set tokens(v) { st.tokens = v; render(); },
+    get id() { return myId(); },
+    call, link,
     render, maybeShowHowTo,
     async hello() {
       render();
@@ -1409,6 +1437,7 @@ const Social = (() => {
       try {
         const d = await call('hello');
         st.id = d.id; st.tokens = d.tokens || 0; st.invited = d.invited || 0;
+        if (d.daily) Daily.setStatus(d.daily);
         const seen = await kv.get('cakeInvitedSeen');
         if (seen !== null && st.invited > seen) {
           const n = st.invited - seen;
@@ -1440,6 +1469,101 @@ const Social = (() => {
       try { await navigator.clipboard.writeText(text + ' ' + url); toast('Link copied. Paste it to a friend!'); }
       catch (e) { toast(url); }
     },
+  };
+})();
+
+
+// ---------- Thử thách hằng ngày (giống hệt bản trên máy chủ) ----------
+function dailyChallenge(day) {
+  const r = n => ((day * 9301 + 49297 * (n + 1)) % 233280) / 233280;
+  const type = day % 4;
+  if (type === 1) return { id: `${day}-p`, kind: 'perfects', target: 3 + Math.floor(r(2) * 5) };
+  if (type === 2) return { id: `${day}-s`, kind: 'streak', target: 3 + Math.floor(r(3) * 3) };
+  if (type === 3) return { id: `${day}-L`, kind: 'layers', target: 15 + Math.floor(r(4) * 11) };
+  return { id: `${day}-l`, kind: 'layers', target: 10 + Math.floor(r(1) * 11) };
+}
+const Daily = (() => {
+  const st = { day: Math.floor(Date.now() / 86400000), streak: 0, done: false, claiming: false, online: false };
+  const ch = () => dailyChallenge(st.day);
+  const label = c => c.kind === 'layers' ? `Stack ${c.target} layers in one game`
+    : c.kind === 'perfects' ? `Get ${c.target} PERFECT drops in one game` : `Hit ${c.target} PERFECTs in a row`;
+  const progress = c => c.kind === 'layers' ? score : c.kind === 'perfects' ? runPerfects : runBestCombo;
+  const rewardOn = () => inTelegram && !!CONFIG.SCORE_URL;
+  function render() {
+    const card = document.getElementById('dailyCard'), c = ch();
+    // Màn hình thua: đã xong thử thách thì ẩn thẻ cho gọn
+    card.style.display = st.done && score > 0 && !running ? 'none' : 'flex';
+    card.className = st.done ? 'done' : '';
+    card.querySelector('.tx').innerHTML = '';
+    const b = document.createElement('b'); b.textContent = 'Daily: ' + label(c);
+    card.querySelector('.tx').append(b, document.createElement('br'),
+      st.done ? 'Done! Come back tomorrow for a new one.' : (rewardOn() ? 'Reward: 🎁 +1 free revive' : 'New challenge every day'));
+    renderHud();
+    card.querySelector('.chip').textContent = st.done ? '✓ Done' : (st.streak > 0 ? `🔥 ${st.streak} day${st.streak > 1 ? 's' : ''}` : '🔥 Start streak');
+  }
+  function renderHud() {
+    const el = document.getElementById('dailyHud'), c = ch();
+    if (!running && !falling) { el.textContent = ''; return; }
+    if (st.done) { el.className = 'done'; el.textContent = '🎯 Daily done ✓'; return; }
+    el.className = ''; el.textContent = `🎯 ${Math.min(progress(c), c.target)}/${c.target}`;
+  }
+  async function check() {
+    renderHud();
+    const c = ch();
+    if (st.done || st.claiming || progress(c) < c.target) return;
+    st.claiming = true;
+    if (!rewardOn()) {                                  // ngoài Telegram: chỉ chúc mừng
+      st.done = true; toast('🎯 Daily challenge complete!'); renderHud(); st.claiming = false; return;
+    }
+    try {
+      const d = await Social.call('daily', { challenge: c.id,
+        stats: { score, perfects: runPerfects, streak: runBestCombo, duration: Date.now() - startTime } });
+      if (d.ok) {
+        st.done = true; st.streak = d.streak; Social.tokens = d.tokens;
+        toast(d.bonus ? `🔥 ${d.streak}-day streak! +${1 + d.bonus} free revives 🎁` : `🎯 Daily challenge complete! +1 free revive 🎁 (🔥 ${d.streak})`);
+        hap.ok(); Sound.newBest();
+      } else st.done = true;
+    } catch (e) { /* thử lại ở lần thả bánh sau */ }
+    st.claiming = false; renderHud();
+  }
+  return {
+    render, renderHud, check,
+    setStatus(d) { st.day = d.day; st.streak = d.streak || 0; st.done = !!d.done; render(); },
+  };
+})();
+
+// ---------- Story + thêm vào màn hình chính ----------
+const Extras = (() => {
+  const can = v => inTelegram && tg.isVersionAtLeast && tg.isVersionAtLeast(v);
+  function setupStory() {
+    const btn = document.getElementById('storyBtn');
+    btn.style.display = can('7.8') && CONFIG.STORY_IMAGE ? '' : 'none';
+  }
+  function shareStory() {
+    const link = Social.link();
+    const text = (score > 0 ? `I stacked ${score} layers in Happy Cake 🎂 Can you beat me?` : 'Stacking Christmas cakes in Happy Cake 🎂🎅') + ' ' + link;
+    const params = { text: text.slice(0, 200) };
+    const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+    if (u && u.is_premium) params.widget_link = { url: link, name: 'Play Happy Cake' };
+    try { tg.shareToStory(CONFIG.STORY_IMAGE, params); } catch (e) { toast('Stories aren\'t available here.'); }
+  }
+  async function afterGame() {
+    setupStory();
+    if (!can('8.0') || !tg.checkHomeScreenStatus) return;
+    const games = ((await kv.get('cakeGames')) || 0) + 1; kv.set('cakeGames', games);
+    const dismissed = (await kv.get('cakeHomeDismissed')) || 0;
+    if (games < 2 || Date.now() - dismissed < 3 * 86400000) return;
+    tg.checkHomeScreenStatus(status => {
+      document.getElementById('homeBanner').style.display = status === 'missed' ? 'flex' : 'none';
+    });
+  }
+  if (inTelegram && tg.onEvent) tg.onEvent('homeScreenAdded', () => {
+    document.getElementById('homeBanner').style.display = 'none'; toast('Added to your home screen 🎉');
+  });
+  return {
+    setupStory, shareStory, afterGame,
+    addHome() { try { tg.addToHomeScreen(); } catch (e) {} },
+    dismissHome() { kv.set('cakeHomeDismissed', Date.now()); document.getElementById('homeBanner').style.display = 'none'; },
   };
 })();
 
@@ -1488,6 +1612,9 @@ document.getElementById('board').addEventListener('pointerdown', e => e.stopProp
 document.getElementById('reviveYes').addEventListener('click', e => { e.stopPropagation(); acceptRevive(); });
 document.getElementById('reviveFree').addEventListener('click', e => { e.stopPropagation(); useFreeRevive(); });
 document.getElementById('shareBtn').addEventListener('click', e => { e.stopPropagation(); Social.share(); });
+document.getElementById('storyBtn').addEventListener('click', e => { e.stopPropagation(); Extras.shareStory(); });
+document.getElementById('homeAdd').addEventListener('click', e => { e.stopPropagation(); Extras.addHome(); });
+document.getElementById('homeX').addEventListener('click', e => { e.stopPropagation(); Extras.dismissHome(); });
 document.getElementById('howLink').addEventListener('click', e => { e.stopPropagation(); document.getElementById('howInvite').style.display = 'flex'; });
 document.getElementById('howShare').addEventListener('click', e => { e.stopPropagation(); document.getElementById('howInvite').style.display = 'none'; Social.share(); });
 document.getElementById('howClose').addEventListener('click', e => { e.stopPropagation(); document.getElementById('howInvite').style.display = 'none'; });
@@ -1514,6 +1641,8 @@ document.addEventListener('keydown', e => {
 reset(); running = false;
 loadBest(v => { best = v; $('bestLine').textContent = best ? 'Best: ' + best : ''; });
 Social.hello();
+Daily.render();
+Extras.setupStory();
 requestAnimationFrame(frame);
 </script>
 </body>
