@@ -174,6 +174,14 @@ if (TG_ANALYTICS.token) {
   #revive .top { padding-top: 22px; } #howInvite .top { padding-top: 22px; } #board header { padding-top: 20px; }
   #revive .top h2, #howInvite .top h2, #board header h2 { font-family: var(--xfont); font-weight: 700; font-size: 26px; letter-spacing: .5px; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
   #board ol { border-radius: 0 0 16px 16px; }
+  #boardTabs { display: flex; gap: 6px; padding: 10px 12px 0; }
+  #boardTabs button { flex: 1; border: 2px solid #ead7bf; background: #fff; color: #8a6a50; border-radius: 999px;
+    padding: 7px 6px; font: 700 13px system-ui, sans-serif; cursor: pointer; }
+  #boardTabs button.on { background: linear-gradient(180deg, #e0303f, var(--xred2)); color: #fff; border-color: var(--xgold); }
+  #cupInfo { display: none; margin: 8px 12px 0; padding: 8px 10px; border-radius: 12px; background: #fff1d6;
+    border: 1.5px dashed #e3a92e; font-size: 12.5px; color: #6a4a20; text-align: center; line-height: 1.5; }
+  #cupInfo b.cd { color: var(--xred); }
+  #cupInfo small { display: block; opacity: .75; font-size: 11.5px; }
   #board footer { border-radius: 0 0 16px 16px; }
   #board li.me { background: #ffe2b0; box-shadow: inset 4px 0 0 var(--xred); }
   #howInvite li span { background: var(--xred); box-shadow: 0 0 0 2px var(--xgold); }
@@ -195,7 +203,9 @@ if (TG_ANALYTICS.token) {
   <button id="boardBtn" aria-label="Leaderboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" fill="currentColor" fill-opacity=".25"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></button>
   <div id="board" role="dialog" aria-label="Leaderboard">
     <div class="panel holly">
-      <header class="snowcap in"><h2 data-i18n="boardTitle">Top 20 bakers</h2><button class="close" id="boardClose" aria-label="Close">✕</button></header>
+      <header class="snowcap in"><h2 id="boardH" data-i18n="cupName">Christmas Cup</h2><button class="close" id="boardClose" aria-label="Close">✕</button></header>
+      <div id="boardTabs"><button data-tab="cup" class="on" data-i18n="tabCup">🏆 This week</button><button data-tab="all" data-i18n="tabAll">🌍 All time</button></div>
+      <div id="cupInfo"></div>
       <ol id="boardList"></ol>
       <footer id="boardFoot" data-i18n="boardFoot">Your Telegram name, photo and best score are shown on this board.</footer>
     </div>
@@ -236,7 +246,7 @@ if (TG_ANALYTICS.token) {
     <div id="dailyCard" class="holly" style="display:none"><div class="ic">🎯</div><div class="tx"></div><div class="chip"></div></div>
     <button id="startBtn" class="snowcap" data-i18n="start">Start</button>
     <button id="shareBtn" class="snowcap">Invite friends</button>
-    <div class="row2"><button id="openBoard" class="secondary" data-i18n="leaderboard">Leaderboard</button><button id="storyBtn" class="secondary" style="display:none" data-i18n="story">📸 Story</button></div>
+    <div class="row2"><button id="openBoard" class="secondary" data-i18n="cupBtn">Leaderboard</button><button id="storyBtn" class="secondary" style="display:none" data-i18n="story">📸 Story</button></div>
     <div id="inviteLine"></div>
     <button id="howLink" data-i18n="howLink">How do free revives work?</button>
     <div id="legal"><a data-href="privacy.html" data-i18n="privacy">Privacy</a> · <a data-href="terms.html" data-i18n="terms">Terms</a></div>
@@ -293,6 +303,7 @@ const I18N = {
     hudDone: '🎯 Daily done ✓', dComplete: '🎯 Daily challenge complete!', plusRevive: '+1 free revive 🎁',
     dBonus: '🔥 {s}-day streak! +{n} free revives 🎁',
     awesome: 'Awesome!', hoho: 'Ho ho ho!', saveCake: 'Save my cake?', ohNo: 'Oh no...',
+    cupName: 'Christmas Cup', cupBtn: '🏆 Christmas Cup', tabCup: '🏆 This week', tabAll: '🌍 All time', cupEnds: 'Ends in <b class="cd">{d}d {h}h {m}m</b>', cupPrizes: 'Prizes: 🥇 10 · 🥈 7 · 🥉 5 · #4–10: 2 free revives 🎁', cupRule: 'New Cup every Monday 00:00 UTC. Prizes arrive when you open the game.', cupEmpty: 'No scores this week yet. Be the first!', cupMe: 'This week: <b>#{r}</b> · Best: <b>{b}</b>', cupJoin: 'Play a game this week to join the Cup!', cupWon: '🏆 Christmas Cup: you finished #{r}! +{n} free revives 🎁', cupLine: '🏆 Cup this week: #{r}',
   },
   ru: {
     sub: 'Нажимай, чтобы опустить ярус торта.<br>Ставь ровно и построй самый высокий торт!',
@@ -332,6 +343,7 @@ const I18N = {
     hudDone: '🎯 Задание выполнено ✓', dComplete: '🎯 Задание дня выполнено!', plusRevive: '+1 спасение 🎁',
     dBonus: '🔥 Серия {s} дн.! Спасения: +{n} 🎁',
     awesome: 'Супер!', hoho: 'Хо-хо-хо!', saveCake: 'Спасти торт?', ohNo: 'Ой-ой...',
+    cupName: 'Рождественский кубок', cupBtn: '🏆 Кубок', tabCup: '🏆 Эта неделя', tabAll: '🌍 За всё время', cupEnds: 'До конца: <b class="cd">{d} д {h} ч {m} мин</b>', cupPrizes: 'Призы: 🥇 10 · 🥈 7 · 🥉 5 · 4–10 места: 2 спасения 🎁', cupRule: 'Новый кубок каждый понедельник в 00:00 UTC. Призы придут, когда откроешь игру.', cupEmpty: 'На этой неделе ещё нет результатов. Будь первым!', cupMe: 'На этой неделе: <b>#{r}</b> · Рекорд: <b>{b}</b>', cupJoin: 'Сыграй на этой неделе, чтобы попасть в кубок!', cupWon: '🏆 Рождественский кубок: твоё место #{r}! Спасения: +{n} 🎁', cupLine: '🏆 Кубок недели: #{r}',
   },
   es: {
     sub: 'Toca para soltar cada capa del pastel.<br>¡Alinéalas y construye el pastel más alto!',
@@ -371,6 +383,7 @@ const I18N = {
     hudDone: '🎯 Reto completado ✓', dComplete: '🎯 ¡Reto diario completado!', plusRevive: '+1 rescate gratis 🎁',
     dBonus: '🔥 ¡Racha de {s} días! +{n} rescates gratis 🎁',
     awesome: '¡Genial!', hoho: '¡Jo jo jo!', saveCake: '¿Salvamos el pastel?', ohNo: 'Oh no...',
+    cupName: 'Copa de Navidad', cupBtn: '🏆 Copa', tabCup: '🏆 Esta semana', tabAll: '🌍 Histórico', cupEnds: 'Termina en <b class="cd">{d} d {h} h {m} min</b>', cupPrizes: 'Premios: 🥇 10 · 🥈 7 · 🥉 5 · puestos 4–10: 2 rescates gratis 🎁', cupRule: 'Nueva copa cada lunes a las 00:00 UTC. Los premios llegan al abrir el juego.', cupEmpty: 'Aún no hay puntuaciones esta semana. ¡Sé el primero!', cupMe: 'Esta semana: <b>#{r}</b> · Récord: <b>{b}</b>', cupJoin: '¡Juega una partida esta semana para entrar en la copa!', cupWon: '🏆 Copa de Navidad: ¡quedaste #{r}! +{n} rescates gratis 🎁', cupLine: '🏆 Copa semanal: #{r}',
   },
   pt: {
     sub: 'Toque para soltar cada camada do bolo.<br>Alinhe-as e monte o bolo mais alto!',
@@ -410,6 +423,7 @@ const I18N = {
     hudDone: '🎯 Desafio feito ✓', dComplete: '🎯 Desafio diário concluído!', plusRevive: '+1 resgate grátis 🎁',
     dBonus: '🔥 Sequência de {s} dias! +{n} resgates grátis 🎁',
     awesome: 'Incrível!', hoho: 'Ho ho ho!', saveCake: 'Salvar meu bolo?', ohNo: 'Ah não...',
+    cupName: 'Copa de Natal', cupBtn: '🏆 Copa', tabCup: '🏆 Esta semana', tabAll: '🌍 Geral', cupEnds: 'Termina em <b class="cd">{d}d {h}h {m}min</b>', cupPrizes: 'Prêmios: 🥇 10 · 🥈 7 · 🥉 5 · 4º–10º: 2 resgates grátis 🎁', cupRule: 'Nova copa toda segunda às 00:00 UTC. Os prêmios chegam quando você abrir o jogo.', cupEmpty: 'Ainda não há pontuações nesta semana. Seja o primeiro!', cupMe: 'Nesta semana: <b>#{r}</b> · Recorde: <b>{b}</b>', cupJoin: 'Jogue uma partida nesta semana para entrar na copa!', cupWon: '🏆 Copa de Natal: você ficou em #{r}! +{n} resgates grátis 🎁', cupLine: '🏆 Copa da semana: #{r}',
   },
   id: {
     sub: 'Ketuk untuk menjatuhkan tiap lapisan kue.<br>Susun lurus dan bangun kue tertinggi!',
@@ -449,6 +463,7 @@ const I18N = {
     hudDone: '🎯 Tantangan selesai ✓', dComplete: '🎯 Tantangan harian selesai!', plusRevive: '+1 nyawa gratis 🎁',
     dBonus: '🔥 Beruntun {s} hari! +{n} nyawa gratis 🎁',
     awesome: 'Keren!', hoho: 'Ho ho ho!', saveCake: 'Selamatkan kueku?', ohNo: 'Yah...',
+    cupName: 'Piala Natal', cupBtn: '🏆 Piala', tabCup: '🏆 Minggu ini', tabAll: '🌍 Sepanjang masa', cupEnds: 'Berakhir dalam <b class="cd">{d} hari {h} jam {m} mnt</b>', cupPrizes: 'Hadiah: 🥇 10 · 🥈 7 · 🥉 5 · peringkat 4–10: 2 nyawa gratis 🎁', cupRule: 'Piala baru setiap Senin 00:00 UTC. Hadiah masuk saat kamu membuka game.', cupEmpty: 'Belum ada skor minggu ini. Jadilah yang pertama!', cupMe: 'Minggu ini: <b>#{r}</b> · Terbaik: <b>{b}</b>', cupJoin: 'Main satu game minggu ini untuk ikut Piala!', cupWon: '🏆 Piala Natal: kamu peringkat #{r}! +{n} nyawa gratis 🎁', cupLine: '🏆 Piala minggu ini: #{r}',
   },
 };
 const LANG = (() => {
@@ -829,6 +844,7 @@ function finishGame() {
     $('sub').textContent = (score > 0 && score >= best ? t('newBest') : t('tryAgain')) + ' · ' + t('best', { n: best });
     $('bestLine').textContent = '';
     $('startBtn').textContent = t('playAgain');
+    $('overlay').style.display = 'flex'; Board.cupLine();
     Social.render();
     Social.maybeShowHowTo();
     Daily.render();
@@ -1584,7 +1600,29 @@ const CONFIG = {
 };
 const Board = (() => {
   const on = !!CONFIG.SCORE_URL;
-  let last = null, loading = false;
+  let last = null, loading = false, tab = 'cup', timer = null;
+  // Cờ theo ngôn ngữ Telegram (Telegram không cho biết quốc gia)
+  const FLAGS = { ru: '🇷🇺', uk: '🇺🇦', be: '🇧🇾', kk: '🇰🇿', uz: '🇺🇿', es: '🇪🇸', pt: '🇧🇷', id: '🇮🇩', ms: '🇲🇾',
+    vi: '🇻🇳', en: '🇬🇧', de: '🇩🇪', fr: '🇫🇷', it: '🇮🇹', pl: '🇵🇱', tr: '🇹🇷', fa: '🇮🇷', ar: '🇸🇦', hi: '🇮🇳',
+    th: '🇹🇭', ja: '🇯🇵', ko: '🇰🇷', zh: '🇨🇳', nl: '🇳🇱', he: '🇮🇱', az: '🇦🇿', ka: '🇬🇪', hy: '🇦🇲', ro: '🇷🇴', cs: '🇨🇿' };
+  const flag = lang => FLAGS[String(lang || '').toLowerCase().split(/[-_]/)[0]] || '🌐';
+  const week = () => Math.floor((Date.now() / 86400000 + 3) / 7);
+  function countdown() {
+    const box = el('cupInfo');
+    if (tab !== 'cup') { box.style.display = 'none'; return; }
+    const ends = last && last.cup ? last.cup.endsAt : ((week() + 1) * 7 - 3) * 86400000;
+    const left = Math.max(0, ends - Date.now());
+    const d = Math.floor(left / 86400000), h = Math.floor(left / 3600000) % 24, m = Math.floor(left / 60000) % 60;
+    box.innerHTML = t('cupEnds', { d, h, m }) + '<br>' + t('cupPrizes') + '<small>' + t('cupRule') + '</small>';
+    box.style.display = 'block';
+  }
+  function setTab(next) {
+    tab = next;
+    document.querySelectorAll('#boardTabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+    el('boardH').textContent = tab === 'cup' ? t('cupName') : t('boardTitle');
+    countdown();
+    if (last) render(last);
+  }
   const el = id => document.getElementById(id);
   function headers() {
     const h = { 'Content-Type': 'application/json' };
@@ -1617,20 +1655,26 @@ const Board = (() => {
   }
   function render(data) {
     last = data;
+    const cupMode = tab === 'cup' && !!data.cup;
+    const rows = cupMode ? data.cup.top : data.top;
     const list = el('boardList'); list.innerHTML = '';
-    if (!data.top || !data.top.length) { message(t('boardEmpty')); }
-    else data.top.forEach(p => {
+    if (!rows || !rows.length) { message(cupMode ? t('cupEmpty') : t('boardEmpty')); }
+    else rows.forEach(p => {
       const li = document.createElement('li'); if (p.me) li.className = 'me';
       const rk = document.createElement('div'); rk.className = 'rank' + (p.rank <= 3 ? ' r' + p.rank : ''); rk.textContent = p.rank;
       const who = document.createElement('div'); who.className = 'who';
-      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = p.name + (p.me ? t('you') : '');
+      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = flag(p.lang) + ' ' + p.name + (p.me ? t('you') : '');
       who.appendChild(nm);
       if (p.username) { const un = document.createElement('div'); un.className = 'user'; un.textContent = '@' + p.username; who.appendChild(un); }
       const pts = document.createElement('div'); pts.className = 'pts'; pts.textContent = p.best;
       li.append(rk, avatar(p), who, pts); list.appendChild(li);
     });
     const foot = el('boardFoot');
-    if (data.me) {
+    if (cupMode && inTelegram) {
+      foot.innerHTML = data.cup.me
+        ? t('cupMe', { r: Number(data.cup.me.rank) || 0, b: Number(data.cup.me.best) || 0 })
+        : t('cupJoin');
+    } else if (data.me) {
       foot.innerHTML = t('myRank', { r: Number(data.me.rank) || 0, b: Number(data.me.best) || 0, g: Number(data.me.games_played) || 0 });
     } else {
       foot.textContent = inTelegram ? t('boardFoot') : t('boardWeb');
@@ -1645,11 +1689,20 @@ const Board = (() => {
     finally { loading = false; }
   }
   return {
-    open() { el('board').style.display = 'flex'; if (last) render(last); refresh(); },
-    close() { el('board').style.display = 'none'; },
+    open() {
+      el('board').style.display = 'flex'; setTab(tab); refresh();
+      clearInterval(timer); timer = setInterval(countdown, 20000);
+    },
+    close() { el('board').style.display = 'none'; clearInterval(timer); },
+    setTab,
     async submit(score, duration) {
       if (!on || !inTelegram) return;
-      try { render(await call({ action: 'submit', score, duration })); } catch (e) {}
+      try { render(await call({ action: 'submit', score, duration })); Board.cupLine(); } catch (e) {}
+    },
+    // Dòng "🏆 Cup this week: #5" trên màn hình kết thúc ván
+    cupLine() {
+      const me = last && last.cup && last.cup.me;
+      if ($('overlay').style.display === 'flex' && score > 0 && me) $('bestLine').textContent = t('cupLine', { r: Number(me.rank) || 0 });
     },
   };
 })();
@@ -1657,9 +1710,9 @@ const Board = (() => {
 
 
 // ---------- Mời bạn bè, thách đấu, nguồn người chơi ----------
-function toast(msg) {
+function toast(msg, ms) {
   const t = document.getElementById('toast'); t.textContent = msg; t.style.opacity = 1;
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.style.opacity = 0, 2600);
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.style.opacity = 0, ms || 2600);
 }
 const kv = {
   get(k) {
@@ -1724,6 +1777,12 @@ const Social = (() => {
         const d = await call('hello');
         st.id = d.id; st.tokens = d.tokens || 0; st.invited = d.invited || 0;
         if (d.daily) Daily.setStatus(d.daily);
+        const won = d.cup && Array.isArray(d.cup.rewards) ? d.cup.rewards : [];
+        if (won.length) {
+          const bestRank = Math.min(...won.map(w => Number(w.rank) || 99));
+          const total = won.reduce((a, w) => a + (Number(w.tokens) || 0), 0);
+          setTimeout(() => { toast(t('cupWon', { r: bestRank, n: total }), 5000); hap.ok(); }, 2600);
+        }
         const seen = await kv.get('cakeInvitedSeen');
         if (seen !== null && st.invited > seen) {
           const n = st.invited - seen;
@@ -1891,6 +1950,7 @@ document.getElementById('boardBtn').addEventListener('pointerdown', e => e.stopP
 document.getElementById('boardBtn').addEventListener('click', e => { e.stopPropagation(); if (!running) Board.open(); });
 document.getElementById('openBoard').addEventListener('click', e => { e.stopPropagation(); Board.open(); });
 document.getElementById('boardClose').addEventListener('click', () => Board.close());
+document.querySelectorAll('#boardTabs button').forEach(b => b.addEventListener('click', () => Board.setTab(b.dataset.tab)));
 document.getElementById('board').addEventListener('click', e => { if (e.target.id === 'board') Board.close(); });
 document.getElementById('board').addEventListener('pointerdown', e => e.stopPropagation());
 
