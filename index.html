@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Happy Cake</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Lobster&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <script>
@@ -139,6 +139,7 @@ if (TG_ANALYTICS.token) {
   :root { --xred: #d0283a; --xred2: #8e1420; --xgreen: #2a8a46; --xgreen2: #155c2c; --xgold: #f1c24a; --xcream: #fff8ee;
     --xfont: 'Mountains of Christmas', 'Georgia', serif;
     --candy: repeating-linear-gradient(45deg, #d0283a 0 7px, #ffffff 7px 14px); }
+  html.alt-font { --xfont: 'Lobster', 'Georgia', serif; }   /* tiếng Nga: font có chữ Kirin */
   /* Tuyết phủ trên đầu */
   .snowcap { position: relative; }
   .snowcap::before { content: ''; position: absolute; left: 4px; right: 4px; top: -8px; height: 17px; pointer-events: none; z-index: 2;
@@ -194,52 +195,52 @@ if (TG_ANALYTICS.token) {
   <button id="boardBtn" aria-label="Leaderboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" fill="currentColor" fill-opacity=".25"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></button>
   <div id="board" role="dialog" aria-label="Leaderboard">
     <div class="panel holly">
-      <header class="snowcap in"><h2>Top 20 bakers</h2><button class="close" id="boardClose" aria-label="Close">✕</button></header>
+      <header class="snowcap in"><h2 data-i18n="boardTitle">Top 20 bakers</h2><button class="close" id="boardClose" aria-label="Close">✕</button></header>
       <ol id="boardList"></ol>
-      <footer id="boardFoot">Your Telegram name, photo and best score are shown on this board.</footer>
+      <footer id="boardFoot" data-i18n="boardFoot">Your Telegram name, photo and best score are shown on this board.</footer>
     </div>
   </div>
   <div id="revive" role="dialog" aria-label="Continue">
     <div class="card holly">
-      <div class="top snowcap in"><h2>Santa can save your cake!</h2><p id="reviveSub">Watch a short ad and keep stacking.</p></div>
+      <div class="top snowcap in"><h2 data-i18n="revTitle">Santa can save your cake!</h2><p id="reviveSub" data-i18n="revSubAd">Watch a short ad and keep stacking.</p></div>
       <div class="body">
-        <div class="layer">Your cake is <b id="reviveScore">0</b> layers tall</div>
+        <div class="layer" data-i18n="revLayers">Your cake is <b id="reviveScore">0</b> layers tall</div>
         <button id="reviveFree" style="display:none">🎁 Free revive</button>
-        <button id="reviveYes">▶ Watch ad &amp; continue</button>
-        <div id="reviveHint" style="display:none">Out of free revives? <b>Invite a friend</b> after this game. You both get one! 🎁</div>
+        <button id="reviveYes" data-i18n="revWatch">▶ Watch ad &amp; continue</button>
+        <div id="reviveHint" style="display:none" data-i18n="revHint">Out of free revives? <b>Invite a friend</b> after this game. You both get one! 🎁</div>
         <div id="reviveMsg"></div>
-        <button id="reviveNo">No thanks</button>
+        <button id="reviveNo" data-i18n="revNo">No thanks</button>
       </div>
     </div>
   </div>
   <div id="toast"></div>
   <div id="howInvite" role="dialog" aria-label="How free revives work">
     <div class="card holly">
-      <div class="top snowcap in"><h2>🎁 Get free Santa revives</h2></div>
+      <div class="top snowcap in"><h2 data-i18n="howTitle">🎁 Get free Santa revives</h2></div>
       <ol>
-        <li><span>1</span><div>Tap <b>Invite friends</b> and send the link to a friend.</div></li>
-        <li><span>2</span><div>Your friend opens Happy Cake from your link.</div></li>
-        <li><span>3</span><div><b>You both get +1 free revive.</b> Use it when your cake falls, no ad needed!</div></li>
+        <li><span>1</span><div data-i18n="how1">Tap <b>Invite friends</b> and send the link to a friend.</div></li>
+        <li><span>2</span><div data-i18n="how2">Your friend opens Happy Cake from your link.</div></li>
+        <li><span>3</span><div data-i18n="how3"><b>You both get +1 free revive.</b> Use it when your cake falls, no ad needed!</div></li>
       </ol>
-      <div class="note">Works for friends who haven't played Happy Cake before. No limit: every new friend = +1 revive.</div>
-      <div class="btns"><button id="howShare">Invite friends now</button><button id="howClose">Maybe later</button></div>
+      <div class="note" data-i18n="howNote">Works for friends who haven't played Happy Cake before. No limit: every new friend = +1 revive.</div>
+      <div class="btns"><button id="howShare" data-i18n="howShare">Invite friends now</button><button id="howClose" data-i18n="howClose">Maybe later</button></div>
     </div>
   </div>
-  <div id="fakeAd"><span class="tag">DEMO AD</span><div>This is where the ad will play</div><div id="fakeAdCount">3</div></div>
+  <div id="fakeAd"><span class="tag">DEMO AD</span><div data-i18n="demoAd">This is where the ad will play</div><div id="fakeAdCount">3</div></div>
   <button id="muteBtn" aria-label="Toggle sound"></button>
   <div id="hud"><div id="score">0</div><div id="combo"></div><div id="dailyHud"></div></div>
   <div id="overlay">
     <h1 id="title">HAPPY CAKE</h1>
-    <p id="sub">Tap to drop each cake layer.<br>Line them up to build the tallest cake!</p>
+    <p id="sub" data-i18n="sub">Tap to drop each cake layer.<br>Line them up to build the tallest cake!</p>
     <div id="bestLine"></div>
     <div id="dailyCard" class="holly" style="display:none"><div class="ic">🎯</div><div class="tx"></div><div class="chip"></div></div>
-    <button id="startBtn" class="snowcap">Start</button>
+    <button id="startBtn" class="snowcap" data-i18n="start">Start</button>
     <button id="shareBtn" class="snowcap">Invite friends</button>
-    <div class="row2"><button id="openBoard" class="secondary">Leaderboard</button><button id="storyBtn" class="secondary" style="display:none">📸 Story</button></div>
+    <div class="row2"><button id="openBoard" class="secondary" data-i18n="leaderboard">Leaderboard</button><button id="storyBtn" class="secondary" style="display:none" data-i18n="story">📸 Story</button></div>
     <div id="inviteLine"></div>
-    <button id="howLink">How do free revives work?</button>
-    <div id="legal"><a data-href="privacy.html">Privacy</a> · <a data-href="terms.html">Terms</a></div>
-    <div id="homeBanner"><span>📲 Add Happy Cake to your home screen</span><button id="homeAdd">Add</button><button id="homeX" aria-label="Dismiss">✕</button></div>
+    <button id="howLink" data-i18n="howLink">How do free revives work?</button>
+    <div id="legal"><a data-href="privacy.html" data-i18n="privacy">Privacy</a> · <a data-href="terms.html" data-i18n="terms">Terms</a></div>
+    <div id="homeBanner"><span data-i18n="homeBanner">📲 Add Happy Cake to your home screen</span><button id="homeAdd" data-i18n="homeAdd">Add</button><button id="homeX" aria-label="Dismiss">✕</button></div>
   </div>
 
 <script>
@@ -252,6 +253,227 @@ const hap = {
   ok()   { try { inTelegram && tg.HapticFeedback.notificationOccurred('success'); } catch (e) {} },
   fail() { try { inTelegram && tg.HapticFeedback.notificationOccurred('error'); } catch (e) {} },
 };
+// ---------- Ngôn ngữ (tự chọn theo ngôn ngữ Telegram; thử bằng ?lang=ru) ----------
+const I18N = {
+  en: {
+    sub: 'Tap to drop each cake layer.<br>Line them up to build the tallest cake!',
+    start: 'Start', playAgain: 'Play again', newBest: 'New best!', tryAgain: 'Try again!', best: 'Best: {n}',
+    invite: 'Invite friends', challenge: 'Challenge a friend', inviteSmall: '🎁 +1 free revive for you & your friend',
+    leaderboard: 'Leaderboard', story: '📸 Story', howLink: 'How do free revives work?', privacy: 'Privacy', terms: 'Terms',
+    homeBanner: '📲 Add Happy Cake to your home screen', homeAdd: 'Add', homeAdded: 'Added to your home screen 🎉',
+    inviteLine: 'Friends joined: <b>{a}</b> · Free revives: <b>{b}</b>',
+    boardTitle: 'Top 20 bakers', boardFoot: 'Your Telegram name, photo and best score are shown on this board.',
+    boardWeb: 'Open the game in Telegram to join the leaderboard.', boardEmpty: 'No scores yet. Be the first baker!',
+    you: ' (you)', myRank: 'Your rank: <b>#{r}</b> · Best: <b>{b}</b> · Games: {g}',
+    notSetup: "The leaderboard isn't set up yet.", loading: 'Loading…',
+    loadFail: "Couldn't load the leaderboard. Check your connection and try again.",
+    revTitle: 'Santa can save your cake!', revSubAd: 'Watch a short ad and keep stacking.',
+    revSubBoth: 'Use a free revive or watch a short ad.', revSubFree: 'Use your free revive and keep stacking.',
+    revLayers: 'Your cake is <b id="reviveScore">0</b> layers tall', revFree: '🎁 Free revive ({n} left)',
+    revWatch: '▶ Watch ad &amp; continue',
+    revHint: 'Out of free revives? <b>Invite a friend</b> after this game. You both get one! 🎁',
+    revNo: 'No thanks', revNoAd: 'No ad available right now.', revUsed: 'Free revive used 🎁',
+    revFail: "Couldn't use a free revive. Try the ad instead.",
+    howTitle: '🎁 Get free Santa revives', how1: 'Tap <b>Invite friends</b> and send the link to a friend.',
+    how2: 'Your friend opens Happy Cake from your link.',
+    how3: '<b>You both get +1 free revive.</b> Use it when your cake falls, no ad needed!',
+    howNote: "Works for friends who haven't played Happy Cake before. No limit: every new friend = +1 revive.",
+    howShare: 'Invite friends now', howClose: 'Maybe later', demoAd: 'This is where the ad will play',
+    joined: '🎉 Friends joined from your invite: {n}! +{n} free revives 🎁',
+    welcome: 'Welcome! Your friend gave you a free Santa revive 🎁',
+    sent: "Sent? You'll get +1 free revive when your friend opens the game 🎁",
+    copied: 'Link copied. Paste it to a friend!',
+    shareScore: 'I stacked {n} layers in Happy Cake 🎂🎅 Can you beat me?',
+    shareInvite: 'Come stack Christmas cakes with me in Happy Cake 🎂🎅 We both get a free Santa revive!',
+    storyPlain: 'Stacking Christmas cakes in Happy Cake 🎂🎅', storyWidget: 'Play Happy Cake',
+    storyNA: "Stories aren't available here.",
+    dLayers: 'Stack {n} layers in one game', dPerf: 'Get {n} PERFECT drops in one game', dStreak: 'Hit {n} PERFECTs in a row',
+    dDaily: 'Daily: {c}', dDone: 'Done! Come back tomorrow for a new one.', dReward: 'Reward: 🎁 +1 free revive',
+    dNew: 'New challenge every day', chipDone: '✓ Done', chipStreak: '🔥 Day {n}', chipStart: '🔥 Start streak',
+    hudDone: '🎯 Daily done ✓', dComplete: '🎯 Daily challenge complete!', plusRevive: '+1 free revive 🎁',
+    dBonus: '🔥 {s}-day streak! +{n} free revives 🎁',
+    awesome: 'Awesome!', hoho: 'Ho ho ho!', saveCake: 'Save my cake?', ohNo: 'Oh no...',
+  },
+  ru: {
+    sub: 'Нажимай, чтобы опустить ярус торта.<br>Ставь ровно и построй самый высокий торт!',
+    start: 'Играть', playAgain: 'Ещё раз', newBest: 'Новый рекорд!', tryAgain: 'Попробуй ещё!', best: 'Рекорд: {n}',
+    invite: 'Пригласить друзей', challenge: 'Бросить вызов другу', inviteSmall: '🎁 +1 спасение тебе и другу',
+    leaderboard: 'Рейтинг', story: '📸 История', howLink: 'Как получить бесплатные спасения?', privacy: 'Конфиденциальность', terms: 'Условия',
+    homeBanner: '📲 Добавь Happy Cake на главный экран', homeAdd: 'Добавить', homeAdded: 'Добавлено на главный экран 🎉',
+    inviteLine: 'Друзей пришло: <b>{a}</b> · Спасений: <b>{b}</b>',
+    boardTitle: 'Топ-20 пекарей', boardFoot: 'В рейтинге видны твоё имя, фото в Telegram и лучший результат.',
+    boardWeb: 'Открой игру в Telegram, чтобы попасть в рейтинг.', boardEmpty: 'Пока нет результатов. Стань первым пекарем!',
+    you: ' (ты)', myRank: 'Твоё место: <b>#{r}</b> · Рекорд: <b>{b}</b> · Игр: {g}',
+    notSetup: 'Рейтинг ещё не настроен.', loading: 'Загрузка…',
+    loadFail: 'Не удалось загрузить рейтинг. Проверь интернет и попробуй снова.',
+    revTitle: 'Санта спасёт твой торт!', revSubAd: 'Посмотри короткую рекламу и строй дальше.',
+    revSubBoth: 'Используй бесплатное спасение или посмотри рекламу.', revSubFree: 'Используй бесплатное спасение и строй дальше.',
+    revLayers: 'Ярусов в торте: <b id="reviveScore">0</b>', revFree: '🎁 Бесплатное спасение (осталось {n})',
+    revWatch: '▶ Реклама и продолжить',
+    revHint: 'Нет спасений? <b>Пригласи друга</b> после игры, и вы оба получите по одному! 🎁',
+    revNo: 'Нет, спасибо', revNoAd: 'Сейчас нет рекламы.', revUsed: 'Спасение использовано 🎁',
+    revFail: 'Не удалось использовать спасение. Попробуй рекламу.',
+    howTitle: '🎁 Бесплатные спасения от Санты', how1: 'Нажми <b>Пригласить друзей</b> и отправь ссылку другу.',
+    how2: 'Друг открывает Happy Cake по твоей ссылке.',
+    how3: '<b>Вы оба получаете +1 спасение.</b> Используй его, когда торт упадёт, без рекламы!',
+    howNote: 'Работает для друзей, которые ещё не играли в Happy Cake. Без лимита: каждый новый друг = +1 спасение.',
+    howShare: 'Пригласить сейчас', howClose: 'Может, позже', demoAd: 'Здесь будет реклама',
+    joined: '🎉 Друзей пришло по твоей ссылке: {n}! Спасения: +{n} 🎁',
+    welcome: 'Добро пожаловать! Друг подарил тебе спасение от Санты 🎁',
+    sent: 'Отправил? Получишь +1 спасение, когда друг откроет игру 🎁',
+    copied: 'Ссылка скопирована. Отправь её другу!',
+    shareScore: 'Мой торт в Happy Cake: {n} ярусов 🎂🎅 Сможешь выше?',
+    shareInvite: 'Давай строить рождественские торты в Happy Cake 🎂🎅 Мы оба получим спасение от Санты!',
+    storyPlain: 'Строю рождественские торты в Happy Cake 🎂🎅', storyWidget: 'Играть в Happy Cake',
+    storyNA: 'Истории здесь недоступны.',
+    dLayers: 'Построй {n} ярусов за одну игру', dPerf: 'Сделай {n} PERFECT за одну игру', dStreak: 'Сделай {n} PERFECT подряд',
+    dDaily: 'Задание дня: {c}', dDone: 'Готово! Возвращайся завтра за новым.', dReward: 'Награда: 🎁 +1 спасение',
+    dNew: 'Новое задание каждый день', chipDone: '✓ Готово', chipStreak: '🔥 День {n}', chipStart: '🔥 Начни серию',
+    hudDone: '🎯 Задание выполнено ✓', dComplete: '🎯 Задание дня выполнено!', plusRevive: '+1 спасение 🎁',
+    dBonus: '🔥 Серия {s} дн.! Спасения: +{n} 🎁',
+    awesome: 'Супер!', hoho: 'Хо-хо-хо!', saveCake: 'Спасти торт?', ohNo: 'Ой-ой...',
+  },
+  es: {
+    sub: 'Toca para soltar cada capa del pastel.<br>¡Alinéalas y construye el pastel más alto!',
+    start: 'Jugar', playAgain: 'Jugar otra vez', newBest: '¡Nuevo récord!', tryAgain: '¡Inténtalo de nuevo!', best: 'Récord: {n}',
+    invite: 'Invitar amigos', challenge: 'Reta a un amigo', inviteSmall: '🎁 +1 rescate gratis para ti y tu amigo',
+    leaderboard: 'Clasificación', story: '📸 Historia', howLink: '¿Cómo funcionan los rescates gratis?', privacy: 'Privacidad', terms: 'Términos',
+    homeBanner: '📲 Añade Happy Cake a tu pantalla de inicio', homeAdd: 'Añadir', homeAdded: 'Añadido a tu pantalla de inicio 🎉',
+    inviteLine: 'Amigos unidos: <b>{a}</b> · Rescates gratis: <b>{b}</b>',
+    boardTitle: 'Top 20 pasteleros', boardFoot: 'Tu nombre, foto de Telegram y mejor puntuación aparecen en esta tabla.',
+    boardWeb: 'Abre el juego en Telegram para entrar en la clasificación.', boardEmpty: 'Aún no hay puntuaciones. ¡Sé el primer pastelero!',
+    you: ' (tú)', myRank: 'Tu puesto: <b>#{r}</b> · Récord: <b>{b}</b> · Partidas: {g}',
+    notSetup: 'La clasificación aún no está lista.', loading: 'Cargando…',
+    loadFail: 'No se pudo cargar la clasificación. Revisa tu conexión e inténtalo de nuevo.',
+    revTitle: '¡Santa puede salvar tu pastel!', revSubAd: 'Mira un anuncio corto y sigue apilando.',
+    revSubBoth: 'Usa un rescate gratis o mira un anuncio corto.', revSubFree: 'Usa tu rescate gratis y sigue apilando.',
+    revLayers: 'Tu pastel tiene <b id="reviveScore">0</b> capas', revFree: '🎁 Rescate gratis (quedan {n})',
+    revWatch: '▶ Ver anuncio y continuar',
+    revHint: '¿Sin rescates gratis? <b>Invita a un amigo</b> después de esta partida. ¡Los dos reciben uno! 🎁',
+    revNo: 'No, gracias', revNoAd: 'No hay anuncios disponibles ahora.', revUsed: 'Rescate gratis usado 🎁',
+    revFail: 'No se pudo usar el rescate gratis. Prueba con el anuncio.',
+    howTitle: '🎁 Consigue rescates gratis de Santa', how1: 'Toca <b>Invitar amigos</b> y envía el enlace a un amigo.',
+    how2: 'Tu amigo abre Happy Cake desde tu enlace.',
+    how3: '<b>Los dos reciben +1 rescate gratis.</b> ¡Úsalo cuando se caiga tu pastel, sin anuncios!',
+    howNote: 'Funciona con amigos que nunca han jugado Happy Cake. Sin límite: cada amigo nuevo = +1 rescate.',
+    howShare: 'Invitar amigos ahora', howClose: 'Quizás luego', demoAd: 'Aquí se mostrará el anuncio',
+    joined: '🎉 Amigos que se unieron con tu invitación: {n}! +{n} rescates gratis 🎁',
+    welcome: '¡Bienvenido! Tu amigo te regaló un rescate de Santa 🎁',
+    sent: '¿Enviado? Recibirás +1 rescate gratis cuando tu amigo abra el juego 🎁',
+    copied: 'Enlace copiado. ¡Pégalo a un amigo!',
+    shareScore: 'Apilé {n} capas en Happy Cake 🎂🎅 ¿Me superas?',
+    shareInvite: 'Ven a apilar pasteles navideños conmigo en Happy Cake 🎂🎅 ¡Los dos recibimos un rescate de Santa!',
+    storyPlain: 'Apilando pasteles navideños en Happy Cake 🎂🎅', storyWidget: 'Jugar Happy Cake',
+    storyNA: 'Las historias no están disponibles aquí.',
+    dLayers: 'Apila {n} capas en una partida', dPerf: 'Consigue {n} PERFECT en una partida', dStreak: 'Logra {n} PERFECT seguidos',
+    dDaily: 'Reto diario: {c}', dDone: '¡Hecho! Vuelve mañana por uno nuevo.', dReward: 'Premio: 🎁 +1 rescate gratis',
+    dNew: 'Nuevo reto cada día', chipDone: '✓ Hecho', chipStreak: '🔥 Día {n}', chipStart: '🔥 Empieza la racha',
+    hudDone: '🎯 Reto completado ✓', dComplete: '🎯 ¡Reto diario completado!', plusRevive: '+1 rescate gratis 🎁',
+    dBonus: '🔥 ¡Racha de {s} días! +{n} rescates gratis 🎁',
+    awesome: '¡Genial!', hoho: '¡Jo jo jo!', saveCake: '¿Salvamos el pastel?', ohNo: 'Oh no...',
+  },
+  pt: {
+    sub: 'Toque para soltar cada camada do bolo.<br>Alinhe-as e monte o bolo mais alto!',
+    start: 'Jogar', playAgain: 'Jogar de novo', newBest: 'Novo recorde!', tryAgain: 'Tente de novo!', best: 'Recorde: {n}',
+    invite: 'Convidar amigos', challenge: 'Desafie um amigo', inviteSmall: '🎁 +1 resgate grátis para você e seu amigo',
+    leaderboard: 'Ranking', story: '📸 Story', howLink: 'Como funcionam os resgates grátis?', privacy: 'Privacidade', terms: 'Termos',
+    homeBanner: '📲 Adicione o Happy Cake à tela inicial', homeAdd: 'Adicionar', homeAdded: 'Adicionado à tela inicial 🎉',
+    inviteLine: 'Amigos que entraram: <b>{a}</b> · Resgates grátis: <b>{b}</b>',
+    boardTitle: 'Top 20 confeiteiros', boardFoot: 'Seu nome, foto do Telegram e melhor pontuação aparecem neste ranking.',
+    boardWeb: 'Abra o jogo no Telegram para entrar no ranking.', boardEmpty: 'Ainda não há pontuações. Seja o primeiro confeiteiro!',
+    you: ' (você)', myRank: 'Sua posição: <b>#{r}</b> · Recorde: <b>{b}</b> · Partidas: {g}',
+    notSetup: 'O ranking ainda não está pronto.', loading: 'Carregando…',
+    loadFail: 'Não foi possível carregar o ranking. Verifique sua conexão e tente de novo.',
+    revTitle: 'O Papai Noel pode salvar seu bolo!', revSubAd: 'Assista a um anúncio curto e continue empilhando.',
+    revSubBoth: 'Use um resgate grátis ou assista a um anúncio curto.', revSubFree: 'Use seu resgate grátis e continue empilhando.',
+    revLayers: 'Seu bolo tem <b id="reviveScore">0</b> camadas', revFree: '🎁 Resgate grátis (restam {n})',
+    revWatch: '▶ Ver anúncio e continuar',
+    revHint: 'Sem resgates grátis? <b>Convide um amigo</b> depois desta partida. Vocês dois ganham um! 🎁',
+    revNo: 'Não, obrigado', revNoAd: 'Nenhum anúncio disponível agora.', revUsed: 'Resgate grátis usado 🎁',
+    revFail: 'Não foi possível usar o resgate grátis. Tente o anúncio.',
+    howTitle: '🎁 Ganhe resgates grátis do Papai Noel', how1: 'Toque em <b>Convidar amigos</b> e envie o link para um amigo.',
+    how2: 'Seu amigo abre o Happy Cake pelo seu link.',
+    how3: '<b>Vocês dois ganham +1 resgate grátis.</b> Use quando o bolo cair, sem anúncio!',
+    howNote: 'Vale para amigos que ainda não jogaram Happy Cake. Sem limite: cada amigo novo = +1 resgate.',
+    howShare: 'Convidar amigos agora', howClose: 'Talvez depois', demoAd: 'Aqui vai passar o anúncio',
+    joined: '🎉 Amigos que entraram pelo seu convite: {n}! +{n} resgates grátis 🎁',
+    welcome: 'Bem-vindo! Seu amigo te deu um resgate do Papai Noel 🎁',
+    sent: 'Enviou? Você ganha +1 resgate grátis quando seu amigo abrir o jogo 🎁',
+    copied: 'Link copiado. Cole para um amigo!',
+    shareScore: 'Empilhei {n} camadas no Happy Cake 🎂🎅 Consegue me superar?',
+    shareInvite: 'Vem empilhar bolos de Natal comigo no Happy Cake 🎂🎅 Nós dois ganhamos um resgate do Papai Noel!',
+    storyPlain: 'Empilhando bolos de Natal no Happy Cake 🎂🎅', storyWidget: 'Jogar Happy Cake',
+    storyNA: 'Stories não estão disponíveis aqui.',
+    dLayers: 'Empilhe {n} camadas em uma partida', dPerf: 'Faça {n} PERFECT em uma partida', dStreak: 'Faça {n} PERFECT seguidos',
+    dDaily: 'Desafio diário: {c}', dDone: 'Feito! Volte amanhã para um novo.', dReward: 'Prêmio: 🎁 +1 resgate grátis',
+    dNew: 'Novo desafio todo dia', chipDone: '✓ Feito', chipStreak: '🔥 Dia {n}', chipStart: '🔥 Comece a sequência',
+    hudDone: '🎯 Desafio feito ✓', dComplete: '🎯 Desafio diário concluído!', plusRevive: '+1 resgate grátis 🎁',
+    dBonus: '🔥 Sequência de {s} dias! +{n} resgates grátis 🎁',
+    awesome: 'Incrível!', hoho: 'Ho ho ho!', saveCake: 'Salvar meu bolo?', ohNo: 'Ah não...',
+  },
+  id: {
+    sub: 'Ketuk untuk menjatuhkan tiap lapisan kue.<br>Susun lurus dan bangun kue tertinggi!',
+    start: 'Mulai', playAgain: 'Main lagi', newBest: 'Rekor baru!', tryAgain: 'Coba lagi!', best: 'Terbaik: {n}',
+    invite: 'Ajak teman', challenge: 'Tantang teman', inviteSmall: '🎁 +1 nyawa gratis untukmu & temanmu',
+    leaderboard: 'Peringkat', story: '📸 Story', howLink: 'Bagaimana cara dapat nyawa gratis?', privacy: 'Privasi', terms: 'Ketentuan',
+    homeBanner: '📲 Tambahkan Happy Cake ke layar utama', homeAdd: 'Tambah', homeAdded: 'Ditambahkan ke layar utama 🎉',
+    inviteLine: 'Teman bergabung: <b>{a}</b> · Nyawa gratis: <b>{b}</b>',
+    boardTitle: 'Top 20 Pembuat Kue', boardFoot: 'Nama, foto Telegram, dan skor terbaikmu ditampilkan di papan ini.',
+    boardWeb: 'Buka game di Telegram untuk masuk peringkat.', boardEmpty: 'Belum ada skor. Jadilah yang pertama!',
+    you: ' (kamu)', myRank: 'Peringkatmu: <b>#{r}</b> · Terbaik: <b>{b}</b> · Main: {g}',
+    notSetup: 'Papan peringkat belum disiapkan.', loading: 'Memuat…',
+    loadFail: 'Gagal memuat peringkat. Periksa koneksimu lalu coba lagi.',
+    revTitle: 'Santa bisa menyelamatkan kuemu!', revSubAd: 'Tonton iklan singkat dan lanjutkan menyusun.',
+    revSubBoth: 'Pakai nyawa gratis atau tonton iklan singkat.', revSubFree: 'Pakai nyawa gratismu dan lanjutkan menyusun.',
+    revLayers: 'Kuemu setinggi <b id="reviveScore">0</b> lapis', revFree: '🎁 Nyawa gratis (sisa {n})',
+    revWatch: '▶ Tonton iklan &amp; lanjut',
+    revHint: 'Nyawa gratis habis? <b>Ajak teman</b> setelah game ini. Kalian berdua dapat satu! 🎁',
+    revNo: 'Tidak, terima kasih', revNoAd: 'Belum ada iklan saat ini.', revUsed: 'Nyawa gratis dipakai 🎁',
+    revFail: 'Gagal memakai nyawa gratis. Coba lewat iklan.',
+    howTitle: '🎁 Dapatkan nyawa gratis dari Santa', how1: 'Ketuk <b>Ajak teman</b> dan kirim tautannya ke teman.',
+    how2: 'Temanmu membuka Happy Cake dari tautanmu.',
+    how3: '<b>Kalian berdua dapat +1 nyawa gratis.</b> Pakai saat kuemu jatuh, tanpa iklan!',
+    howNote: 'Berlaku untuk teman yang belum pernah main Happy Cake. Tanpa batas: tiap teman baru = +1 nyawa.',
+    howShare: 'Ajak teman sekarang', howClose: 'Nanti saja', demoAd: 'Iklan akan tampil di sini',
+    joined: '🎉 {n} teman bergabung dari undanganmu! +{n} nyawa gratis 🎁',
+    welcome: 'Selamat datang! Temanmu memberimu nyawa gratis dari Santa 🎁',
+    sent: 'Sudah dikirim? Kamu dapat +1 nyawa gratis saat temanmu membuka game 🎁',
+    copied: 'Tautan disalin. Kirim ke teman!',
+    shareScore: 'Aku menyusun {n} lapis kue di Happy Cake 🎂🎅 Bisa kalahkan aku?',
+    shareInvite: 'Ayo susun kue Natal bareng aku di Happy Cake 🎂🎅 Kita berdua dapat nyawa gratis dari Santa!',
+    storyPlain: 'Menyusun kue Natal di Happy Cake 🎂🎅', storyWidget: 'Main Happy Cake',
+    storyNA: 'Story tidak tersedia di sini.',
+    dLayers: 'Susun {n} lapis dalam satu game', dPerf: 'Dapatkan {n} PERFECT dalam satu game', dStreak: 'Dapatkan {n} PERFECT beruntun',
+    dDaily: 'Tantangan harian: {c}', dDone: 'Selesai! Kembali besok untuk tantangan baru.', dReward: 'Hadiah: 🎁 +1 nyawa gratis',
+    dNew: 'Tantangan baru setiap hari', chipDone: '✓ Selesai', chipStreak: '🔥 Hari ke-{n}', chipStart: '🔥 Mulai beruntun',
+    hudDone: '🎯 Tantangan selesai ✓', dComplete: '🎯 Tantangan harian selesai!', plusRevive: '+1 nyawa gratis 🎁',
+    dBonus: '🔥 Beruntun {s} hari! +{n} nyawa gratis 🎁',
+    awesome: 'Keren!', hoho: 'Ho ho ho!', saveCake: 'Selamatkan kueku?', ohNo: 'Yah...',
+  },
+};
+const LANG = (() => {
+  let code = '';
+  try { code = new URLSearchParams(location.search).get('lang') || ''; } catch (e) {}
+  if (!code && tg && tg.initDataUnsafe && tg.initDataUnsafe.user) code = tg.initDataUnsafe.user.language_code || '';
+  if (!code) code = navigator.language || 'en';
+  code = code.toLowerCase().split(/[-_]/)[0];
+  if (['be', 'kk', 'ky', 'uz', 'tg'].includes(code)) code = 'ru';   // các nước dùng tiếng Nga phổ biến
+  if (code === 'ms') code = 'id';                                    // tiếng Mã Lai gần tiếng Indonesia
+  if (code === 'gl' || code === 'ca') code = 'es';
+  return I18N[code] ? code : 'en';
+})();
+function t(key, vars) {
+  let s = (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || key;
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+// Gắn chữ vào các phần tử có data-i18n (chữ là của mình viết, không chứa dữ liệu người dùng)
+function applyI18n() {
+  document.documentElement.lang = LANG;
+  if (LANG === 'ru') document.documentElement.classList.add('alt-font');
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.innerHTML = t(el.dataset.i18n); });
+}
+applyI18n();
 function loadBest(cb) {
   if (inTelegram && tg.CloudStorage) tg.CloudStorage.getItem('stackBest', (e, v) => cb(e ? 0 : Number(v || 0)));
   else { let v = 0; try { v = Number(localStorage.getItem('stackBest') || 0); } catch (e) {} cb(v); }
@@ -478,7 +700,7 @@ function drop() {
     rings.push({ ...cur, t: 0 });
     runPerfects++; runBestCombo = Math.max(runBestCombo, combo);
     showCombo(combo >= 2 ? `PERFECT ×${combo}` : 'PERFECT');
-    santaReact('happy', 1000, combo >= 3 ? 'Awesome!' : 'Ho ho ho!');
+    santaReact('happy', 1000, combo >= 3 ? t('awesome') : t('hoho'));
     Sound.perfect(combo); if (combo < 3 || combo % 3 === 0) Sound.hoho();
     hap.ok();
   } else {                                   // cắt phần thừa
@@ -522,7 +744,7 @@ function gameOver() {
   hap.fail();
   Sound.stopMusic(); Sound.slice();
   if (!revived && score > 0 && (Ads.available() || Social.tokens > 0)) {
-    santaReact('sad', 0, 'Save my cake?');
+    santaReact('sad', 0, t('saveCake'));
     santa.bubbleUntil = Infinity;
     setTimeout(showRevive, 800);
   } else {
@@ -537,14 +759,14 @@ function showRevive() {
   $('reviveYes').style.display = Ads.available() ? '' : 'none';
   $('reviveFree').disabled = false;
   $('reviveFree').style.display = Social.tokens > 0 ? '' : 'none';
-  $('reviveFree').textContent = `🎁 Free revive (${Social.tokens} left)`;
+  $('reviveFree').textContent = t('revFree', { n: Social.tokens });
   $('reviveHint').style.display = inTelegram && Social.tokens <= 0 ? '' : 'none';
   $('reviveSub').textContent = Social.tokens > 0
-    ? (Ads.available() ? 'Use a free revive or watch a short ad.' : 'Use your free revive and keep stacking.')
-    : 'Watch a short ad and keep stacking.';
+    ? (Ads.available() ? t('revSubBoth') : t('revSubFree'))
+    : t('revSubAd');
   $('revive').style.display = 'flex';
   let left = 8;
-  const tick = () => { $('reviveNo').textContent = `No thanks (${left})`; if (left-- <= 0) declineRevive(); };
+  const tick = () => { $('reviveNo').textContent = `${t('revNo')} (${left})`; if (left-- <= 0) declineRevive(); };
   tick(); clearInterval(reviveTimer); reviveTimer = setInterval(tick, 1000);
 }
 function hideRevive() { clearInterval(reviveTimer); $('revive').style.display = 'none'; }
@@ -554,20 +776,20 @@ function doRevive() {
   revived = true;
   falling = false; running = true; combo = 0;
   newBlock();
-  santaReact('happy', 1400, 'Ho ho ho!');
+  santaReact('happy', 1400, t('hoho'));
   Sound.unlock(); Sound.hoho(); Sound.startMusic();
   showCombo('KEEP STACKING!');
 }
 
 async function acceptRevive() {
   clearInterval(reviveTimer);
-  $('reviveNo').textContent = 'No thanks';
+  $('reviveNo').textContent = t('revNo');
   $('reviveYes').disabled = true; $('reviveFree').disabled = true;
   try {
     await Ads.show();                 // chỉ tiếp tục khi xem hết quảng cáo
     doRevive();
   } catch (e) {
-    $('reviveMsg').textContent = 'No ad available right now.';
+    $('reviveMsg').textContent = t('revNoAd');
     $('reviveYes').disabled = false; $('reviveFree').disabled = false;
     if (Social.tokens <= 0) setTimeout(declineRevive, 1500);
   }
@@ -575,11 +797,11 @@ async function acceptRevive() {
 
 async function useFreeRevive() {
   clearInterval(reviveTimer);
-  $('reviveNo').textContent = 'No thanks';
+  $('reviveNo').textContent = t('revNo');
   $('reviveYes').disabled = true; $('reviveFree').disabled = true;
-  if (await Social.useToken()) { doRevive(); toast('Free revive used 🎁'); }
+  if (await Social.useToken()) { doRevive(); toast(t('revUsed')); }
   else {
-    $('reviveMsg').textContent = 'Couldn\'t use a free revive. Try the ad instead.';
+    $('reviveMsg').textContent = t('revFail');
     $('reviveFree').style.display = 'none'; $('reviveYes').disabled = false;
     if (!Ads.available()) setTimeout(declineRevive, 1500);
   }
@@ -594,7 +816,7 @@ function declineRevive() {
 // Kết thúc ván: buồn, lưu điểm, hiện màn hình chơi lại
 function finishGame() {
   running = false; falling = true;
-  santaReact('sad', 0, 'Oh no...');
+  santaReact('sad', 0, t('ohNo'));
   santa.bubbleUntil = Infinity;
   Sound.fail();
   if (score > 0 && score > best) setTimeout(() => Sound.newBest(), 1700);
@@ -604,15 +826,15 @@ function finishGame() {
   setTimeout(() => {
     falling = false;
     $('title').textContent = score;
-    $('sub').innerHTML = (score > 0 && score >= best ? 'New best!' : 'Try again!') + ' · Best: ' + best;
+    $('sub').textContent = (score > 0 && score >= best ? t('newBest') : t('tryAgain')) + ' · ' + t('best', { n: best });
     $('bestLine').textContent = '';
-    $('startBtn').textContent = 'Play again';
+    $('startBtn').textContent = t('playAgain');
     Social.render();
     Social.maybeShowHowTo();
     Daily.render();
     Extras.afterGame();
     $('overlay').style.display = 'flex';
-    if (inTelegram) { tg.MainButton.setText('Play again'); tg.MainButton.show(); }
+    if (inTelegram) { tg.MainButton.setText(t('playAgain')); tg.MainButton.show(); }
   }, 900);
 }
 
@@ -1396,12 +1618,12 @@ const Board = (() => {
   function render(data) {
     last = data;
     const list = el('boardList'); list.innerHTML = '';
-    if (!data.top || !data.top.length) { message('No scores yet. Be the first baker!'); }
+    if (!data.top || !data.top.length) { message(t('boardEmpty')); }
     else data.top.forEach(p => {
       const li = document.createElement('li'); if (p.me) li.className = 'me';
       const rk = document.createElement('div'); rk.className = 'rank' + (p.rank <= 3 ? ' r' + p.rank : ''); rk.textContent = p.rank;
       const who = document.createElement('div'); who.className = 'who';
-      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = p.name + (p.me ? ' (you)' : '');
+      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = p.name + (p.me ? t('you') : '');
       who.appendChild(nm);
       if (p.username) { const un = document.createElement('div'); un.className = 'user'; un.textContent = '@' + p.username; who.appendChild(un); }
       const pts = document.createElement('div'); pts.className = 'pts'; pts.textContent = p.best;
@@ -1409,21 +1631,17 @@ const Board = (() => {
     });
     const foot = el('boardFoot');
     if (data.me) {
-      foot.innerHTML = '';
-      const b1 = document.createElement('b'); b1.textContent = '#' + data.me.rank;
-      const b2 = document.createElement('b'); b2.textContent = data.me.best;
-      foot.append('Your rank: ', b1, ' · Best: ', b2, ' · Games: ' + data.me.games_played);
+      foot.innerHTML = t('myRank', { r: Number(data.me.rank) || 0, b: Number(data.me.best) || 0, g: Number(data.me.games_played) || 0 });
     } else {
-      foot.textContent = inTelegram ? 'Your Telegram name, photo and best score are shown on this board.'
-                                    : 'Open the game in Telegram to join the leaderboard.';
+      foot.textContent = inTelegram ? t('boardFoot') : t('boardWeb');
     }
   }
   async function refresh() {
-    if (!on) return message('The leaderboard isn\'t set up yet.');
+    if (!on) return message(t('notSetup'));
     if (loading) return; loading = true;
-    if (!last) message('Loading…');
+    if (!last) message(t('loading'));
     try { render(await call({ action: 'top' })); }
-    catch (e) { if (!last) message('Couldn\'t load the leaderboard. Check your connection and try again.'); }
+    catch (e) { if (!last) message(t('loadFail')); }
     finally { loading = false; }
   }
   return {
@@ -1474,16 +1692,16 @@ const Social = (() => {
     const line = document.getElementById('inviteLine');
     const btn = document.getElementById('shareBtn');
     btn.innerHTML = '';
-    btn.append(score > 0 && !running ? 'Challenge a friend' : 'Invite friends');
-    if (inTelegram) { const sm = document.createElement('small'); sm.textContent = '🎁 +1 free revive for you & your friend'; btn.append(sm); }
+    btn.append(score > 0 && !running ? t('challenge') : t('invite'));
+    if (inTelegram) { const sm = document.createElement('small'); sm.textContent = t('inviteSmall'); btn.append(sm); }
     document.getElementById('howLink').style.display = inTelegram ? '' : 'none';
     if (!inTelegram) { line.textContent = ''; return; }
     line.innerHTML = '';
     if (st.invited || st.tokens) {
       line.append(document.createElement('br'));
-      const a = document.createElement('b'); a.textContent = st.invited;
-      const b = document.createElement('b'); b.textContent = st.tokens;
-      line.append('Friends joined: ', a, ' · Free revives: ', b);
+      const sp = document.createElement('span');
+      sp.innerHTML = t('inviteLine', { a: Number(st.invited) || 0, b: Number(st.tokens) || 0 });
+      line.append(sp);
     }
   }
   // Hướng dẫn: hiện 1 lần sau ván đầu tiên
@@ -1509,11 +1727,11 @@ const Social = (() => {
         const seen = await kv.get('cakeInvitedSeen');
         if (seen !== null && st.invited > seen) {
           const n = st.invited - seen;
-          setTimeout(() => toast(`🎉 ${n} friend${n > 1 ? 's' : ''} joined from your invite! +${n} free revive${n > 1 ? 's' : ''}`), 1200);
+          setTimeout(() => toast(t('joined', { n })), 1200);
         }
         kv.set('cakeInvitedSeen', st.invited);
         if (d.isNew && (tg.initDataUnsafe.start_param || '').startsWith('ref_') && st.tokens > 0)
-          toast('Welcome! Your friend gave you a free Santa revive 🎁');
+          toast(t('welcome'));
         render();
       } catch (e) {}
     },
@@ -1525,16 +1743,16 @@ const Social = (() => {
     async share() {
       const challenge = score > 0 && !running;
       const text = challenge
-        ? `I stacked ${score} layers in Happy Cake 🎂🎅 Can you beat me?`
-        : 'Come stack Christmas cakes with me in Happy Cake 🎂🎅 We both get a free Santa revive!';
+        ? t('shareScore', { n: score })
+        : t('shareInvite');
       const url = link();
       if (inTelegram && tg.openTelegramLink) {
         tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text));
-        setTimeout(() => toast("Sent? You'll get +1 free revive when your friend opens the game 🎁"), 900);
+        setTimeout(() => toast(t('sent')), 900);
         return;
       }
       try { if (navigator.share) { await navigator.share({ text, url }); return; } } catch (e) { return; }
-      try { await navigator.clipboard.writeText(text + ' ' + url); toast('Link copied. Paste it to a friend!'); }
+      try { await navigator.clipboard.writeText(text + ' ' + url); toast(t('copied')); }
       catch (e) { toast(url); }
     },
   };
@@ -1553,8 +1771,7 @@ function dailyChallenge(day) {
 const Daily = (() => {
   const st = { day: Math.floor(Date.now() / 86400000), streak: 0, done: false, claiming: false, online: false };
   const ch = () => dailyChallenge(st.day);
-  const label = c => c.kind === 'layers' ? `Stack ${c.target} layers in one game`
-    : c.kind === 'perfects' ? `Get ${c.target} PERFECT drops in one game` : `Hit ${c.target} PERFECTs in a row`;
+  const label = c => t(c.kind === 'layers' ? 'dLayers' : c.kind === 'perfects' ? 'dPerf' : 'dStreak', { n: c.target });
   const progress = c => c.kind === 'layers' ? score : c.kind === 'perfects' ? runPerfects : runBestCombo;
   const rewardOn = () => inTelegram && !!CONFIG.SCORE_URL;
   function render() {
@@ -1563,16 +1780,16 @@ const Daily = (() => {
     card.style.display = st.done && score > 0 && !running ? 'none' : 'flex';
     card.classList.toggle('done', st.done);
     card.querySelector('.tx').innerHTML = '';
-    const b = document.createElement('b'); b.textContent = 'Daily: ' + label(c);
+    const b = document.createElement('b'); b.textContent = t('dDaily', { c: label(c) });
     card.querySelector('.tx').append(b, document.createElement('br'),
-      st.done ? 'Done! Come back tomorrow for a new one.' : (rewardOn() ? 'Reward: 🎁 +1 free revive' : 'New challenge every day'));
+      st.done ? t('dDone') : (rewardOn() ? t('dReward') : t('dNew')));
     renderHud();
-    card.querySelector('.chip').textContent = st.done ? '✓ Done' : (st.streak > 0 ? `🔥 ${st.streak} day${st.streak > 1 ? 's' : ''}` : '🔥 Start streak');
+    card.querySelector('.chip').textContent = st.done ? t('chipDone') : (st.streak > 0 ? t('chipStreak', { n: st.streak }) : t('chipStart'));
   }
   function renderHud() {
     const el = document.getElementById('dailyHud'), c = ch();
     if (!running && !falling) { el.textContent = ''; return; }
-    if (st.done) { el.className = 'done'; el.textContent = '🎯 Daily done ✓'; return; }
+    if (st.done) { el.className = 'done'; el.textContent = t('hudDone'); return; }
     el.className = ''; el.textContent = `🎯 ${Math.min(progress(c), c.target)}/${c.target}`;
   }
   async function check() {
@@ -1581,14 +1798,14 @@ const Daily = (() => {
     if (st.done || st.claiming || progress(c) < c.target) return;
     st.claiming = true;
     if (!rewardOn()) {                                  // ngoài Telegram: chỉ chúc mừng
-      st.done = true; toast('🎯 Daily challenge complete!'); renderHud(); st.claiming = false; return;
+      st.done = true; toast(t('dComplete')); renderHud(); st.claiming = false; return;
     }
     try {
       const d = await Social.call('daily', { challenge: c.id,
         stats: { score, perfects: runPerfects, streak: runBestCombo, duration: Date.now() - startTime } });
       if (d.ok) {
         st.done = true; st.streak = d.streak; Social.tokens = d.tokens;
-        toast(d.bonus ? `🔥 ${d.streak}-day streak! +${1 + d.bonus} free revives 🎁` : `🎯 Daily challenge complete! +1 free revive 🎁 (🔥 ${d.streak})`);
+        toast(d.bonus ? t('dBonus', { s: d.streak, n: 1 + d.bonus }) : `${t('dComplete')} ${t('plusRevive')} (🔥 ${d.streak})`);
         hap.ok(); Sound.newBest();
       } else st.done = true;
     } catch (e) { /* thử lại ở lần thả bánh sau */ }
@@ -1609,11 +1826,11 @@ const Extras = (() => {
   }
   function shareStory() {
     const link = Social.link();
-    const text = (score > 0 ? `I stacked ${score} layers in Happy Cake 🎂 Can you beat me?` : 'Stacking Christmas cakes in Happy Cake 🎂🎅') + ' ' + link;
+    const text = (score > 0 ? t('shareScore', { n: score }) : t('storyPlain')) + ' ' + link;
     const params = { text: text.slice(0, 200) };
     const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
-    if (u && u.is_premium) params.widget_link = { url: link, name: 'Play Happy Cake' };
-    try { tg.shareToStory(CONFIG.STORY_IMAGE, params); } catch (e) { toast('Stories aren\'t available here.'); }
+    if (u && u.is_premium) params.widget_link = { url: link, name: t('storyWidget') };
+    try { tg.shareToStory(CONFIG.STORY_IMAGE, params); } catch (e) { toast(t('storyNA')); }
   }
   async function afterGame() {
     setupStory();
@@ -1626,7 +1843,7 @@ const Extras = (() => {
     });
   }
   if (inTelegram && tg.onEvent) tg.onEvent('homeScreenAdded', () => {
-    document.getElementById('homeBanner').style.display = 'none'; toast('Added to your home screen 🎉');
+    document.getElementById('homeBanner').style.display = 'none'; toast(t('homeAdded'));
   });
   return {
     setupStory, shareStory, afterGame,
@@ -1712,7 +1929,7 @@ document.addEventListener('keydown', e => {
 });
 
 reset(); running = false;
-loadBest(v => { best = v; $('bestLine').textContent = best ? 'Best: ' + best : ''; });
+loadBest(v => { best = v; $('bestLine').textContent = best ? t('best', { n: best }) : ''; });
 Social.hello();
 Daily.render();
 Extras.setupStory();
