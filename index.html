@@ -8,6 +8,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+<script>
+// Telegram Analytics (TON) – cần cho Telegram Apps Center. Lấy token và tên trong @DataChief_bot.
+const TG_ANALYTICS = { token: '', appName: '' };
+if (TG_ANALYTICS.token) {
+  const s = document.createElement('script');
+  s.async = true; s.src = 'https://tganalytics.xyz/index.js';
+  s.onload = () => { try { window.telegramAnalytics.init({ token: TG_ANALYTICS.token, appName: TG_ANALYTICS.appName }); } catch (e) {} };
+  document.head.appendChild(s);
+}
+</script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -118,6 +128,8 @@
   #homeBanner span { flex: 1; text-align: left; }
   #homeAdd { background: #fff6ea !important; color: #5a3a28 !important; padding: 6px 12px !important; font-size: 13px !important; margin: 0 !important; box-shadow: none !important; }
   #homeX { background: none !important; color: #fff !important; padding: 4px 6px !important; font-size: 16px !important; margin: 0 !important; box-shadow: none !important; border: none !important; }
+  #legal { font-size: 12px; opacity: .75; margin-top: 2px; }
+  #legal a { color: #fff; text-decoration: underline; cursor: pointer; }
   #reviveFree { background: linear-gradient(180deg, #ffd25a, #e3a92e); color: #4a2f08; font-weight: 600; box-shadow: 0 4px 12px rgba(227,169,46,.4); }
   #toast { position: fixed; left: 50%; bottom: 12%; transform: translateX(-50%); z-index: 30; background: rgba(20,24,48,.92); color: #fff;
     padding: 10px 18px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 86vw; text-align: center; }
@@ -226,6 +238,7 @@
     <div class="row2"><button id="openBoard" class="secondary">Leaderboard</button><button id="storyBtn" class="secondary" style="display:none">📸 Story</button></div>
     <div id="inviteLine"></div>
     <button id="howLink">How do free revives work?</button>
+    <div id="legal"><a data-href="privacy.html">Privacy</a> · <a data-href="terms.html">Terms</a></div>
     <div id="homeBanner"><span>📲 Add Happy Cake to your home screen</span><button id="homeAdd">Add</button><button id="homeX" aria-label="Dismiss">✕</button></div>
   </div>
 
@@ -1667,6 +1680,11 @@ document.getElementById('board').addEventListener('pointerdown', e => e.stopProp
 document.getElementById('reviveYes').addEventListener('click', e => { e.stopPropagation(); acceptRevive(); });
 document.getElementById('reviveFree').addEventListener('click', e => { e.stopPropagation(); useFreeRevive(); });
 document.getElementById('shareBtn').addEventListener('click', e => { e.stopPropagation(); Social.share(); });
+document.querySelectorAll('#legal a').forEach(a => a.addEventListener('click', e => {
+  e.stopPropagation();
+  const url = new URL(a.dataset.href, location.href).href;
+  if (inTelegram && tg.openLink) tg.openLink(url); else window.open(url, '_blank');
+}));
 document.getElementById('storyBtn').addEventListener('click', e => { e.stopPropagation(); Extras.shareStory(); });
 document.getElementById('homeAdd').addEventListener('click', e => { e.stopPropagation(); Extras.addHome(); });
 document.getElementById('homeX').addEventListener('click', e => { e.stopPropagation(); Extras.dismissHome(); });
