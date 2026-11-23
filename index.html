@@ -182,6 +182,42 @@ if (TG_ANALYTICS.token) {
     border: 1.5px dashed #e3a92e; font-size: 12.5px; color: #6a4a20; text-align: center; line-height: 1.5; }
   #cupInfo b.cd { color: var(--xred); }
   #cupInfo small { display: block; opacity: .75; font-size: 11.5px; }
+  #overlay .row2 .secondary { padding: 9px 16px; }
+  /* Cửa hàng */
+  #shop { position: fixed; inset: 0; z-index: 11; display: none; align-items: center; justify-content: center; background: rgba(15,18,38,.55); }
+  #shop .panel { width: min(94vw, 410px); max-height: min(86vh, 700px); display: flex; flex-direction: column; color: #4a2f20;
+    border: 3px solid var(--xgold); background: var(--xcream); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.45); position: relative; }
+  #shop header { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 10px; color: #fff;
+    background: linear-gradient(180deg, #e0303f, var(--xred2)); border-bottom: 3px solid var(--xgold); border-radius: 15px 15px 0 0; position: relative; }
+  #shop header h2 { font-family: var(--xfont); font-weight: 700; font-size: 26px; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+  #shop .close { background: rgba(255,255,255,.2); color: #fff; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 18px; cursor: pointer; }
+  #shopBody { overflow-y: auto; padding: 4px 12px 8px; flex: 1; }
+  #shopBody h3 { font-size: 13px; letter-spacing: .5px; text-transform: uppercase; color: #9a6a40; margin: 12px 2px 6px; }
+  #shopBody .msg { padding: 30px 10px; text-align: center; color: #8a6a50; }
+  .sgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .sgrid.skins { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+  .sitem { background: #fff; border: 2px solid #f0dcc2; border-radius: 14px; padding: 10px 6px 8px; text-align: center; position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .sitem .big { font-size: 22px; font-weight: 800; color: #c8202f; line-height: 1.1; }
+  .sitem .nm { font-size: 12.5px; font-weight: 600; color: #6a4a30; line-height: 1.2; min-height: 30px; display: flex; align-items: center; }
+  .sitem .tag { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: var(--xgreen);
+    color: #fff; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1.5px solid var(--xgold); }
+  .sitem button { width: 100%; border: none; border-radius: 999px; padding: 7px 4px; font: 700 14px system-ui, sans-serif; cursor: pointer;
+    background: linear-gradient(180deg, #ffd65a, #e8a92a); color: #5a3a08; box-shadow: 0 2px 0 #b07a12; }
+  .sitem button.use { background: linear-gradient(180deg, #34a356, var(--xgreen2)); color: #fff; box-shadow: 0 2px 0 #0e4220; }
+  .sitem button.on { background: #f3e6d4; color: #8a6a50; box-shadow: none; }
+  .sitem button:disabled { opacity: .6; }
+  .sitem.box { grid-column: 1 / -1; flex-direction: row; text-align: left; gap: 10px; padding: 12px 10px;
+    background: linear-gradient(135deg, #fff6d8, #ffe2b0); border-color: var(--xgold); }
+  .sitem.box .ic { font-size: 34px; }
+  .sitem.box .tx { flex: 1; font-size: 12.5px; color: #6a4a30; }
+  .sitem.box .tx b { display: block; font-size: 15px; color: #8e1420; }
+  .sitem.box button { width: auto; padding: 8px 14px; }
+  .cakeprev { width: 54px; height: 46px; position: relative; }
+  .cakeprev i { position: absolute; left: 50%; transform: translateX(-50%); border-radius: 4px; display: block; }
+  #shop footer { padding: 8px 14px 12px; border-top: 1px solid #f0e2cf; font-size: 11.5px; color: #8a6a50; text-align: center; line-height: 1.45; }
+  #shop footer a { color: #c8202f; text-decoration: underline; cursor: pointer; }
+  #reviveBuy { background: linear-gradient(180deg, #ffd65a, #e8a92a); color: #5a3a08; border: 2px solid var(--xgold); }
   #board footer { border-radius: 0 0 16px 16px; }
   #board li.me { background: #ffe2b0; box-shadow: inset 4px 0 0 var(--xred); }
   #howInvite li span { background: var(--xred); box-shadow: 0 0 0 2px var(--xgold); }
@@ -216,6 +252,7 @@ if (TG_ANALYTICS.token) {
       <div class="body">
         <div class="layer" data-i18n="revLayers">Your cake is <b id="reviveScore">0</b> layers tall</div>
         <button id="reviveFree" style="display:none">🎁 Free revive</button>
+        <button id="reviveBuy" style="display:none"></button>
         <button id="reviveYes" data-i18n="revWatch">▶ Watch ad &amp; continue</button>
         <div id="reviveHint" style="display:none" data-i18n="revHint">Out of free revives? <b>Invite a friend</b> after this game. You both get one! 🎁</div>
         <div id="reviveMsg"></div>
@@ -224,6 +261,13 @@ if (TG_ANALYTICS.token) {
     </div>
   </div>
   <div id="toast"></div>
+  <div id="shop" role="dialog" aria-label="Shop">
+    <div class="panel holly">
+      <header class="snowcap in"><h2 data-i18n="shopTitle">Santa's Shop</h2><button class="close" id="shopClose" aria-label="Close">✕</button></header>
+      <div id="shopBody"></div>
+      <footer id="shopFoot"></footer>
+    </div>
+  </div>
   <div id="howInvite" role="dialog" aria-label="How free revives work">
     <div class="card holly">
       <div class="top snowcap in"><h2 data-i18n="howTitle">🎁 Get free Santa revives</h2></div>
@@ -246,7 +290,7 @@ if (TG_ANALYTICS.token) {
     <div id="dailyCard" class="holly" style="display:none"><div class="ic">🎯</div><div class="tx"></div><div class="chip"></div></div>
     <button id="startBtn" class="snowcap" data-i18n="start">Start</button>
     <button id="shareBtn" class="snowcap">Invite friends</button>
-    <div class="row2"><button id="openBoard" class="secondary" data-i18n="cupBtn">Leaderboard</button><button id="storyBtn" class="secondary" style="display:none" data-i18n="story">📸 Story</button></div>
+    <div class="row2"><button id="openBoard" class="secondary" data-i18n="cupBtn">Leaderboard</button><button id="shopBtn" class="secondary" style="display:none" data-i18n="shopBtn">⭐ Shop</button><button id="storyBtn" class="secondary" style="display:none" data-i18n="story">📸 Story</button></div>
     <div id="inviteLine"></div>
     <button id="howLink" data-i18n="howLink">How do free revives work?</button>
     <div id="legal"><a data-href="privacy.html" data-i18n="privacy">Privacy</a> · <a data-href="terms.html" data-i18n="terms">Terms</a></div>
@@ -305,6 +349,8 @@ const I18N = {
     awesome: 'Awesome!', hoho: 'Ho ho ho!', saveCake: 'Save my cake?', ohNo: 'Oh no...',
     cupName: 'Christmas Cup', cupBtn: '🏆 Christmas Cup', tabCup: '🏆 This week', tabAll: '🌍 All time', cupEnds: 'Ends in <b class="cd">{d}d {h}h {m}m</b>', cupPrizes: 'Prizes: 🥇 10 · 🥈 7 · 🥉 5 · #4–10: 2 free revives 🎁', cupRule: 'New Cup every Monday 00:00 UTC. Prizes arrive when you open the game.', cupEmpty: 'No scores this week yet. Be the first!', cupMe: 'This week: <b>#{r}</b> · Best: <b>{b}</b>', cupJoin: 'Play a game this week to join the Cup!', cupWon: '🏆 Christmas Cup: you finished #{r}! +{n} free revives 🎁', cupLine: '🏆 Cup this week: #{r}',
     notifyOn: "🔔 You'll get Christmas Cup results every Monday!",
+    shopBtn: '⭐ Shop', shopTitle: 'Santa\'s Shop', secRevives: 'Santa revives', secSkins: 'Cake styles', revivesN: '{n} revives', tagPopular: 'Popular', tagBest: 'Best value', tagGift: 'Christmas special', it_santa_box: 'Santa\'s Gift Box', boxDesc: 'Golden cake + Gingerbread cake + {n} revives', skin_classic: 'Classic', skin_choco: 'Chocolate', skin_straw: 'Strawberry', skin_ginger: 'Gingerbread', skin_gold: 'Golden', use: 'Use', inUse: '✓ In use', revBuy: '⭐ Get {n} revives · {s} Stars', shopTerms: 'Paid with Telegram Stars. By buying, you agree to the <a>Terms</a>.<br>Need help? Send /paysupport to the bot.', shopWait: '⭐ Payment received! Delivering…', shopThanks: '🎉 Thank you! Added to your game.', shopFail: 'Couldn\'t open the payment. Please try again.',
+    revSubBuy: "Get more revives and keep stacking.",
   },
   ru: {
     sub: 'Нажимай, чтобы опустить ярус торта.<br>Ставь ровно и построй самый высокий торт!',
@@ -346,6 +392,8 @@ const I18N = {
     awesome: 'Супер!', hoho: 'Хо-хо-хо!', saveCake: 'Спасти торт?', ohNo: 'Ой-ой...',
     cupName: 'Рождественский кубок', cupBtn: '🏆 Кубок', tabCup: '🏆 Эта неделя', tabAll: '🌍 За всё время', cupEnds: 'До конца: <b class="cd">{d} д {h} ч {m} мин</b>', cupPrizes: 'Призы: 🥇 10 · 🥈 7 · 🥉 5 · 4–10 места: 2 спасения 🎁', cupRule: 'Новый кубок каждый понедельник в 00:00 UTC. Призы придут, когда откроешь игру.', cupEmpty: 'На этой неделе ещё нет результатов. Будь первым!', cupMe: 'На этой неделе: <b>#{r}</b> · Рекорд: <b>{b}</b>', cupJoin: 'Сыграй на этой неделе, чтобы попасть в кубок!', cupWon: '🏆 Рождественский кубок: твоё место #{r}! Спасения: +{n} 🎁', cupLine: '🏆 Кубок недели: #{r}',
     notifyOn: "🔔 Итоги кубка будут приходить каждый понедельник!",
+    shopBtn: '⭐ Магазин', shopTitle: 'Лавка Санты', secRevives: 'Спасения от Санты', secSkins: 'Виды тортов', revivesN: 'Спасений: {n}', tagPopular: 'Популярно', tagBest: 'Выгодно', tagGift: 'Рождественский набор', it_santa_box: 'Подарок Санты', boxDesc: 'Золотой торт + Имбирный торт + спасений: {n}', skin_classic: 'Классика', skin_choco: 'Шоколадный', skin_straw: 'Клубничный', skin_ginger: 'Имбирный', skin_gold: 'Золотой', use: 'Выбрать', inUse: '✓ Выбран', revBuy: '⭐ Спасений: {n} · {s} Stars', shopTerms: 'Оплата через Telegram Stars. Покупая, ты принимаешь <a>Условия</a>.<br>Нужна помощь? Отправь боту /paysupport.', shopWait: '⭐ Оплата получена! Доставляем…', shopThanks: '🎉 Спасибо! Уже в игре.', shopFail: 'Не удалось открыть оплату. Попробуй ещё раз.',
+    revSubBuy: "Получи ещё спасений и строй дальше.",
   },
   es: {
     sub: 'Toca para soltar cada capa del pastel.<br>¡Alinéalas y construye el pastel más alto!',
@@ -387,6 +435,8 @@ const I18N = {
     awesome: '¡Genial!', hoho: '¡Jo jo jo!', saveCake: '¿Salvamos el pastel?', ohNo: 'Oh no...',
     cupName: 'Copa de Navidad', cupBtn: '🏆 Copa', tabCup: '🏆 Esta semana', tabAll: '🌍 Histórico', cupEnds: 'Termina en <b class="cd">{d} d {h} h {m} min</b>', cupPrizes: 'Premios: 🥇 10 · 🥈 7 · 🥉 5 · puestos 4–10: 2 rescates gratis 🎁', cupRule: 'Nueva copa cada lunes a las 00:00 UTC. Los premios llegan al abrir el juego.', cupEmpty: 'Aún no hay puntuaciones esta semana. ¡Sé el primero!', cupMe: 'Esta semana: <b>#{r}</b> · Récord: <b>{b}</b>', cupJoin: '¡Juega una partida esta semana para entrar en la copa!', cupWon: '🏆 Copa de Navidad: ¡quedaste #{r}! +{n} rescates gratis 🎁', cupLine: '🏆 Copa semanal: #{r}',
     notifyOn: "🔔 ¡Recibirás los resultados de la copa cada lunes!",
+    shopBtn: '⭐ Tienda', shopTitle: 'Tienda de Santa', secRevives: 'Rescates de Santa', secSkins: 'Estilos de pastel', revivesN: '{n} rescates', tagPopular: 'Popular', tagBest: 'Mejor precio', tagGift: 'Especial de Navidad', it_santa_box: 'Caja de regalo de Santa', boxDesc: 'Pastel dorado + Pastel de jengibre + {n} rescates', skin_classic: 'Clásico', skin_choco: 'Chocolate', skin_straw: 'Fresa', skin_ginger: 'Jengibre', skin_gold: 'Dorado', use: 'Usar', inUse: '✓ En uso', revBuy: '⭐ {n} rescates · {s} Stars', shopTerms: 'Pago con Telegram Stars. Al comprar, aceptas los <a>Términos</a>.<br>¿Ayuda? Envía /paysupport al bot.', shopWait: '⭐ ¡Pago recibido! Entregando…', shopThanks: '🎉 ¡Gracias! Ya está en tu juego.', shopFail: 'No se pudo abrir el pago. Inténtalo de nuevo.',
+    revSubBuy: "Consigue más rescates y sigue apilando.",
   },
   pt: {
     sub: 'Toque para soltar cada camada do bolo.<br>Alinhe-as e monte o bolo mais alto!',
@@ -428,6 +478,8 @@ const I18N = {
     awesome: 'Incrível!', hoho: 'Ho ho ho!', saveCake: 'Salvar meu bolo?', ohNo: 'Ah não...',
     cupName: 'Copa de Natal', cupBtn: '🏆 Copa', tabCup: '🏆 Esta semana', tabAll: '🌍 Geral', cupEnds: 'Termina em <b class="cd">{d}d {h}h {m}min</b>', cupPrizes: 'Prêmios: 🥇 10 · 🥈 7 · 🥉 5 · 4º–10º: 2 resgates grátis 🎁', cupRule: 'Nova copa toda segunda às 00:00 UTC. Os prêmios chegam quando você abrir o jogo.', cupEmpty: 'Ainda não há pontuações nesta semana. Seja o primeiro!', cupMe: 'Nesta semana: <b>#{r}</b> · Recorde: <b>{b}</b>', cupJoin: 'Jogue uma partida nesta semana para entrar na copa!', cupWon: '🏆 Copa de Natal: você ficou em #{r}! +{n} resgates grátis 🎁', cupLine: '🏆 Copa da semana: #{r}',
     notifyOn: "🔔 Você vai receber os resultados da copa toda segunda!",
+    shopBtn: '⭐ Loja', shopTitle: 'Loja do Papai Noel', secRevives: 'Resgates do Papai Noel', secSkins: 'Estilos de bolo', revivesN: '{n} resgates', tagPopular: 'Popular', tagBest: 'Melhor preço', tagGift: 'Especial de Natal', it_santa_box: 'Caixa de presente do Papai Noel', boxDesc: 'Bolo dourado + Bolo de gengibre + {n} resgates', skin_classic: 'Clássico', skin_choco: 'Chocolate', skin_straw: 'Morango', skin_ginger: 'Gengibre', skin_gold: 'Dourado', use: 'Usar', inUse: '✓ Em uso', revBuy: '⭐ {n} resgates · {s} Stars', shopTerms: 'Pagamento com Telegram Stars. Ao comprar, você aceita os <a>Termos</a>.<br>Precisa de ajuda? Envie /paysupport ao bot.', shopWait: '⭐ Pagamento recebido! Entregando…', shopThanks: '🎉 Obrigado! Já está no seu jogo.', shopFail: 'Não foi possível abrir o pagamento. Tente de novo.',
+    revSubBuy: "Ganhe mais resgates e continue empilhando.",
   },
   id: {
     sub: 'Ketuk untuk menjatuhkan tiap lapisan kue.<br>Susun lurus dan bangun kue tertinggi!',
@@ -469,6 +521,8 @@ const I18N = {
     awesome: 'Keren!', hoho: 'Ho ho ho!', saveCake: 'Selamatkan kueku?', ohNo: 'Yah...',
     cupName: 'Piala Natal', cupBtn: '🏆 Piala', tabCup: '🏆 Minggu ini', tabAll: '🌍 Sepanjang masa', cupEnds: 'Berakhir dalam <b class="cd">{d} hari {h} jam {m} mnt</b>', cupPrizes: 'Hadiah: 🥇 10 · 🥈 7 · 🥉 5 · peringkat 4–10: 2 nyawa gratis 🎁', cupRule: 'Piala baru setiap Senin 00:00 UTC. Hadiah masuk saat kamu membuka game.', cupEmpty: 'Belum ada skor minggu ini. Jadilah yang pertama!', cupMe: 'Minggu ini: <b>#{r}</b> · Terbaik: <b>{b}</b>', cupJoin: 'Main satu game minggu ini untuk ikut Piala!', cupWon: '🏆 Piala Natal: kamu peringkat #{r}! +{n} nyawa gratis 🎁', cupLine: '🏆 Piala minggu ini: #{r}',
     notifyOn: "🔔 Kamu akan dapat hasil Piala setiap Senin!",
+    shopBtn: '⭐ Toko', shopTitle: 'Toko Santa', secRevives: 'Nyawa dari Santa', secSkins: 'Gaya kue', revivesN: '{n} nyawa', tagPopular: 'Populer', tagBest: 'Paling hemat', tagGift: 'Spesial Natal', it_santa_box: 'Kotak Hadiah Santa', boxDesc: 'Kue emas + Kue jahe + {n} nyawa', skin_classic: 'Klasik', skin_choco: 'Cokelat', skin_straw: 'Stroberi', skin_ginger: 'Jahe', skin_gold: 'Emas', use: 'Pakai', inUse: '✓ Dipakai', revBuy: '⭐ {n} nyawa · {s} Stars', shopTerms: 'Dibayar dengan Telegram Stars. Dengan membeli, kamu setuju dengan <a>Ketentuan</a>.<br>Butuh bantuan? Kirim /paysupport ke bot.', shopWait: '⭐ Pembayaran diterima! Sedang dikirim…', shopThanks: '🎉 Terima kasih! Sudah masuk ke game.', shopFail: 'Gagal membuka pembayaran. Coba lagi.',
+    revSubBuy: "Dapatkan nyawa lagi dan lanjutkan menyusun.",
   },
 };
 const LANG = (() => {
@@ -676,7 +730,22 @@ const $ = id => document.getElementById(id);
 
 // Màu kem phủ mỗi tầng (lặp lại theo vòng)
 const FROSTING = ['#f7c6d9', '#fbe3b0', '#c9e8d4', '#d9cdf5', '#ffd1b3', '#bfe6f5', '#ffc2c2'];
-const frost = b => FROSTING[(b.i + baseHue) % FROSTING.length];
+// Kiểu bánh (bán trong cửa hàng). sponge: [sáng, giữa, tối]; fill: [kem sáng trên, kem tối trên, kem sáng dưới, kem tối dưới]
+const SKINS = {
+  classic: { sponge: ['#ebb67d', '#c98a50', '#a3663a'], pore: '140,80,35', fill: ['#fffaf3', '#efe2d2', '#f3e6d6', '#d9c8b4'],
+             frosting: FROSTING, sprinkles: ['#ff5a7a', '#ffd25a', '#5ac8ff', '#8ae06a', '#c78aff', '#ffffff'] },
+  choco:   { sponge: ['#8a5532', '#6a3a20', '#4e2914'], pore: '40,18,8', fill: ['#fff3e2', '#eadbc4', '#e8d6bd', '#cdb698'],
+             frosting: ['#6b3f24', '#f2e2c8', '#8a5636', '#5a321c', '#d9b48c'], sprinkles: ['#ffffff', '#ffd25a', '#ff5a7a', '#f2e2c8'] },
+  straw:   { sponge: ['#f6c9cf', '#e8a2ad', '#cc7d8b'], pore: '170,70,90', fill: ['#ffffff', '#fbe9ee', '#f7dde3', '#e8c4cc'],
+             frosting: ['#ff8fab', '#ffffff', '#ffc2d1', '#ff6f91', '#ffd6e0'], sprinkles: ['#ffffff', '#ff3b6b', '#c8102e', '#ffd1dc'] },
+  ginger:  { sponge: ['#c98442', '#a1612c', '#7a441a'], pore: '70,35,10', fill: ['#fffaf3', '#efe2d2', '#f3e6d6', '#d9c8b4'],
+             frosting: ['#ffffff', '#e0303f', '#ffffff', '#2a8a46', '#f6f1e6'], sprinkles: ['#e0303f', '#2a8a46', '#ffffff', '#f1c24a'] },
+  gold:    { sponge: ['#f7dc86', '#dcb14c', '#b2872c'], pore: '130,90,15', fill: ['#fffdf0', '#f6ecca', '#efe1b6', '#d6c28e'],
+             frosting: ['#f1c24a', '#fff4cc', '#e3a92e', '#ffe08a', '#fffaf0'], sprinkles: ['#ffffff', '#fff4cc', '#ffd25a', '#ffe9a8'] },
+};
+let skinId = 'classic';
+const SK = () => SKINS[skinId] || SKINS.classic;
+const frost = b => { const f = SK().frosting; return f[(b.i + baseHue) % f.length]; };
 const SPONGE_L = '#d99a63', SPONGE_R = '#b97b47', FILLING = 'rgba(255,245,235,.85)';
 const stars = Array.from({ length: 120 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + .3, p: Math.random() * 6 }));
 
@@ -763,7 +832,7 @@ function gameOver() {
   running = false; falling = true;
   hap.fail();
   Sound.stopMusic(); Sound.slice();
-  if (!revived && score > 0 && (Ads.available() || Social.tokens > 0)) {
+  if (!revived && score > 0 && (Ads.available() || Social.tokens > 0 || (Shop.on() && !!Shop.item('revive_5')))) {
     santaReact('sad', 0, t('saveCake'));
     santa.bubbleUntil = Infinity;
     setTimeout(showRevive, 800);
@@ -781,9 +850,12 @@ function showRevive() {
   $('reviveFree').style.display = Social.tokens > 0 ? '' : 'none';
   $('reviveFree').textContent = t('revFree', { n: Social.tokens });
   $('reviveHint').style.display = inTelegram && Social.tokens <= 0 ? '' : 'none';
+  const p5 = Shop.on() && Social.tokens <= 0 ? Shop.item('revive_5') : null;
+  $('reviveBuy').style.display = p5 ? '' : 'none'; $('reviveBuy').disabled = false;
+  if (p5) $('reviveBuy').textContent = t('revBuy', { n: p5.revives, s: p5.stars });
   $('reviveSub').textContent = Social.tokens > 0
     ? (Ads.available() ? t('revSubBoth') : t('revSubFree'))
-    : t('revSubAd');
+    : (Ads.available() ? t('revSubAd') : t('revSubBuy'));
   $('revive').style.display = 'flex';
   let left = 8;
   const tick = () => { $('reviveNo').textContent = `${t('revNo')} (${left})`; if (left-- <= 0) declineRevive(); };
@@ -825,6 +897,17 @@ async function useFreeRevive() {
     $('reviveFree').style.display = 'none'; $('reviveYes').disabled = false;
     if (!Ads.available()) setTimeout(declineRevive, 1500);
   }
+}
+
+// Mua 5 lượt ngay trong hộp cứu bánh, mua xong tự dùng 1 lượt
+function buyRevive() {
+  clearInterval(reviveTimer);
+  $('reviveNo').textContent = t('revNo');
+  $('reviveBuy').disabled = true;
+  Shop.buy('revive_5', ok => {
+    $('reviveBuy').disabled = false;
+    if (ok && Social.tokens > 0 && $('revive').style.display !== 'none') { $('reviveBuy').style.display = 'none'; useFreeRevive(); }
+  });
 }
 
 function declineRevive() {
@@ -1429,9 +1512,10 @@ function cake(b) {
   for (const f of ['z', 'x']) {
     const lit = f === 'x';
     // Cốt bánh bông lan
-    vfill(faceAt(b, f, y, top - band), lit ? '#ebb67d' : '#c98a50', lit ? '#c98a50' : '#a3663a');
+    const S = SK();
+    vfill(faceAt(b, f, y, top - band), lit ? S.sponge[0] : S.sponge[1], lit ? S.sponge[1] : S.sponge[2]);
     // Lỗ xốp
-    ctx.fillStyle = lit ? 'rgba(140,80,35,.35)' : 'rgba(100,55,25,.35)';
+    ctx.fillStyle = `rgba(${S.pore},${lit ? .35 : .45})`;
     const len = f === 'x' ? d : w;
     const pores = Math.min(14, Math.floor(len / 6));
     for (let k = 0; k < pores; k++) {
@@ -1441,7 +1525,7 @@ function cake(b) {
       ctx.beginPath(); ctx.ellipse(sx, sy, (0.5 + rnd(i, k + 7)) * scale, (0.35 + 0.5 * rnd(i, k + 3)) * scale, 0, 0, 7); ctx.fill();
     }
     // Lớp nhân kem
-    vfill(faceAt(b, f, m, m + mh), lit ? '#fffaf3' : '#efe2d2', lit ? '#f3e6d6' : '#d9c8b4');
+    vfill(faceAt(b, f, m, m + mh), lit ? S.fill[0] : S.fill[1], lit ? S.fill[2] : S.fill[3]);
     // Bóng tiếp xúc ở chân tầng bánh
     vfill(faceAt(b, f, y, y + 3.5), 'rgba(60,30,10,0)', 'rgba(60,30,10,.45)');
     // Viền kem
@@ -1487,7 +1571,7 @@ function cake(b) {
   for (let k = 0; k < nsp; k++) {
     const [sx, sy] = iso(x + w * (0.08 + 0.84 * rnd(i, k + 500)), top, z + d * (0.08 + 0.84 * rnd(i, k + 600)));
     const a = rnd(i, k + 700) * Math.PI, l = 1.6 * scale;
-    ctx.strokeStyle = SPRINKLES[Math.floor(rnd(i, k + 800) * SPRINKLES.length)];
+    const SP = SK().sprinkles; ctx.strokeStyle = SP[Math.floor(rnd(i, k + 800) * SP.length)];
     ctx.beginPath(); ctx.moveTo(sx - Math.cos(a) * l, sy - Math.sin(a) * l * 0.5); ctx.lineTo(sx + Math.cos(a) * l, sy + Math.sin(a) * l * 0.5); ctx.stroke();
   }
   ctx.restore();
@@ -1782,6 +1866,7 @@ const Social = (() => {
         const d = await call('hello');
         st.id = d.id; st.tokens = d.tokens || 0; st.invited = d.invited || 0;
         if (d.daily) Daily.setStatus(d.daily);
+        Shop.init(d.skin);
         const won = d.cup && Array.isArray(d.cup.rewards) ? d.cup.rewards : [];
         if (won.length) {
           const bestRank = Math.min(...won.map(w => Number(w.rank) || 99));
@@ -1934,6 +2019,129 @@ const Extras = (() => {
   };
 })();
 
+// ---------- Cửa hàng Telegram Stars ----------
+const Shop = (() => {
+  const st = { items: null, owned: [], skin: 'classic', busy: false };
+  const el = id => document.getElementById(id);
+  const on = () => inTelegram && !!CONFIG.SCORE_URL && !!tg.openInvoice && tg.isVersionAtLeast && tg.isVersionAtLeast('6.1');
+  const SKIN_ITEM = { choco: 'skin_choco', straw: 'skin_straw', ginger: 'skin_ginger', gold: 'skin_gold' };
+  const item = id => (st.items || []).find(x => x.item === id);
+  function applySkin(id) {
+    skinId = SKINS[id] ? id : 'classic';
+    try { localStorage.setItem('cakeSkin', skinId); } catch (e) {}
+  }
+  // Bánh 3 tầng nhỏ bằng CSS để xem trước kiểu bánh
+  function preview(id) {
+    const S = SKINS[id], box = document.createElement('div'); box.className = 'cakeprev';
+    [[54, 0], [42, 15], [30, 30]].forEach(([w, b], k) => {
+      const sp = document.createElement('i');
+      sp.style.cssText = `width:${w}px;height:14px;bottom:${b}px;background:linear-gradient(180deg, ${S.frosting[k % S.frosting.length]} 0 38%, ${S.fill[0]} 38% 52%, ${S.sponge[0]} 52%, ${S.sponge[2]})`;
+      box.appendChild(sp);
+    });
+    return box;
+  }
+  function btn(text, cls, fn) {
+    const b = document.createElement('button'); b.textContent = text; if (cls) b.className = cls;
+    b.addEventListener('click', e => { e.stopPropagation(); fn(b); }); return b;
+  }
+  function render() {
+    const body = el('shopBody'); body.innerHTML = '';
+    if (!st.items) { const m = document.createElement('div'); m.className = 'msg'; m.textContent = t('loading'); body.appendChild(m); return; }
+    // Hộp quà
+    const box = item('santa_box');
+    if (box) {
+      const g = document.createElement('div'); g.className = 'sgrid';
+      const c = document.createElement('div'); c.className = 'sitem box';
+      const ic = document.createElement('div'); ic.className = 'ic'; ic.textContent = '🎁';
+      const tx = document.createElement('div'); tx.className = 'tx'; tx.innerHTML = t('boxDesc', { n: Number(box.revives) || 0 });
+      const b = document.createElement('b'); b.textContent = t('it_santa_box'); tx.prepend(b);
+      const tag = document.createElement('div'); tag.className = 'tag'; tag.textContent = t('tagGift');
+      c.append(tag, ic, tx, btn('⭐ ' + box.stars, '', () => buy('santa_box')));
+      g.appendChild(c); body.appendChild(g);
+    }
+    // Lượt cứu bánh
+    const h1 = document.createElement('h3'); h1.textContent = t('secRevives'); body.appendChild(h1);
+    const g1 = document.createElement('div'); g1.className = 'sgrid';
+    ['revive_5', 'revive_15', 'revive_40'].forEach((id, k) => {
+      const it = item(id); if (!it) return;
+      const c = document.createElement('div'); c.className = 'sitem';
+      if (k) { const tag = document.createElement('div'); tag.className = 'tag'; tag.textContent = k === 1 ? t('tagPopular') : t('tagBest'); c.appendChild(tag); }
+      const big = document.createElement('div'); big.className = 'big'; big.textContent = '🎁 ' + it.revives;
+      const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = t('revivesN', { n: it.revives });
+      c.append(big, nm, btn('⭐ ' + it.stars, '', () => buy(id)));
+      g1.appendChild(c);
+    });
+    body.appendChild(g1);
+    // Kiểu bánh
+    const h2 = document.createElement('h3'); h2.textContent = t('secSkins'); body.appendChild(h2);
+    const g2 = document.createElement('div'); g2.className = 'sgrid skins';
+    ['classic', 'choco', 'straw', 'ginger', 'gold'].forEach(id => {
+      const it = item(SKIN_ITEM[id]);
+      if (id !== 'classic' && !it) return;
+      const owned = id === 'classic' || st.owned.includes(id);
+      const c = document.createElement('div'); c.className = 'sitem';
+      const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = t('skin_' + id);
+      let b;
+      if (st.skin === id) { b = btn(t('inUse'), 'on', () => {}); }
+      else if (owned) b = btn(t('use'), 'use', () => choose(id));
+      else b = btn('⭐ ' + it.stars, '', () => buy(SKIN_ITEM[id]));
+      c.append(preview(id), nm, b);
+      g2.appendChild(c);
+    });
+    body.appendChild(g2);
+    // Chân trang: điều khoản + hỗ trợ (Telegram yêu cầu)
+    el('shopFoot').innerHTML = t('shopTerms');
+    const a = el('shopFoot').querySelector('a');
+    if (a) a.addEventListener('click', () => { try { tg.openLink(new URL('terms.html', location.href).href); } catch (e) {} });
+  }
+  async function load() {
+    const d = await Social.call('shop');
+    st.items = d.items || []; st.owned = d.owned || []; st.skin = d.skin || 'classic';
+    applySkin(st.skin);
+    if (typeof d.tokens === 'number') Social.tokens = d.tokens;
+    return d;
+  }
+  async function choose(id) {
+    applySkin(id); st.skin = id; render();
+    try { const d = await Social.call('set_skin', { skin: id }); if (d.skin) { st.skin = d.skin; applySkin(d.skin); render(); } } catch (e) {}
+  }
+  // Mua: tạo hóa đơn -> Telegram mở bảng thanh toán -> chờ bot trao hàng
+  function buy(id, onDone) {
+    if (st.busy) return; st.busy = true;
+    const before = { tokens: Social.tokens, owned: st.owned.length };
+    Social.call('invoice', { item: id }).then(d => {
+      tg.openInvoice(d.link, async status => {
+        st.busy = false;
+        if (status !== 'paid') { if (status === 'failed') toast(t('shopFail')); onDone && onDone(false); return; }
+        toast(t('shopWait'), 6000); hap.ok();
+        for (let k = 0; k < 10; k++) {          // bot trao hàng trong vài giây
+          await new Promise(r => setTimeout(r, k ? 1200 : 600));
+          try { await load(); } catch (e) {}
+          if (Social.tokens > before.tokens || st.owned.length > before.owned) break;
+        }
+        toast(t('shopThanks'), 3000); Sound.newBest();
+        if (el('shop').style.display === 'flex') render();
+        onDone && onDone(true);
+      });
+    }).catch(() => { st.busy = false; toast(t('shopFail')); onDone && onDone(false); });
+  }
+  return {
+    on, buy, applySkin, item,
+    get price5() { const it = item('revive_5'); return it ? it : null; },
+    init(skin) {
+      el('shopBtn').style.display = on() ? '' : 'none';
+      if (skin) { st.skin = skin; applySkin(skin); }
+      if (on()) load().catch(() => {});
+    },
+    open() {
+      if (!on()) return;
+      el('shop').style.display = 'flex'; render();
+      load().then(render).catch(() => { el('shopBody').innerHTML = ''; const m = document.createElement('div'); m.className = 'msg'; m.textContent = t('shopFail'); el('shopBody').appendChild(m); });
+    },
+    close() { el('shop').style.display = 'none'; },
+  };
+})();
+
 // ---------- Quảng cáo có thưởng (AdsGram) ----------
 const Ads = (() => {
   let ctrl = null;
@@ -1973,6 +2181,10 @@ document.getElementById('boardBtn').addEventListener('pointerdown', e => e.stopP
 document.getElementById('boardBtn').addEventListener('click', e => { e.stopPropagation(); if (!running) Board.open(); });
 document.getElementById('openBoard').addEventListener('click', e => { e.stopPropagation(); Board.open(); });
 document.getElementById('boardClose').addEventListener('click', () => Board.close());
+document.getElementById('shopBtn').addEventListener('click', e => { e.stopPropagation(); Shop.open(); });
+document.getElementById('shopClose').addEventListener('click', () => Shop.close());
+document.getElementById('shop').addEventListener('click', e => { if (e.target.id === 'shop') Shop.close(); });
+document.getElementById('reviveBuy').addEventListener('click', e => { e.stopPropagation(); buyRevive(); });
 document.querySelectorAll('#boardTabs button').forEach(b => b.addEventListener('click', () => Board.setTab(b.dataset.tab)));
 document.getElementById('board').addEventListener('click', e => { if (e.target.id === 'board') Board.close(); });
 document.getElementById('board').addEventListener('pointerdown', e => e.stopPropagation());
@@ -2011,6 +2223,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); running ? drop() : (!falling && start()); }
 });
 
+try { const ls = localStorage.getItem('cakeSkin'); if (ls && SKINS[ls]) skinId = ls; } catch (e) {}
 reset(); running = false;
 loadBest(v => { best = v; $('bestLine').textContent = best ? t('best', { n: best }) : ''; });
 Social.hello();
