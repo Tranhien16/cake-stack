@@ -293,7 +293,7 @@ if (TG_ANALYTICS.token) {
     <div class="row2"><button id="openBoard" class="secondary" data-i18n="cupBtn">Leaderboard</button><button id="shopBtn" class="secondary" style="display:none" data-i18n="shopBtn">⭐ Shop</button><button id="storyBtn" class="secondary" style="display:none" data-i18n="story">📸 Story</button></div>
     <div id="inviteLine"></div>
     <button id="howLink" data-i18n="howLink">How do free revives work?</button>
-    <div id="legal"><a data-href="privacy.html" data-i18n="privacy">Privacy</a> · <a data-href="terms.html" data-i18n="terms">Terms</a></div>
+    <div id="legal"><a data-href="https://telegra.ph/Happy-Cake--Privacy-Policy-11-23" data-i18n="privacy">Privacy</a> · <a data-href="https://telegra.ph/Happy-Cake--Terms-of-Use-11-23" data-i18n="terms">Terms</a></div>
     <div id="homeBanner"><span data-i18n="homeBanner">📲 Add Happy Cake to your home screen</span><button id="homeAdd" data-i18n="homeAdd">Add</button><button id="homeX" aria-label="Dismiss">✕</button></div>
   </div>
 
@@ -2092,7 +2092,7 @@ const Shop = (() => {
     // Chân trang: điều khoản + hỗ trợ (Telegram yêu cầu)
     el('shopFoot').innerHTML = t('shopTerms');
     const a = el('shopFoot').querySelector('a');
-    if (a) a.addEventListener('click', () => { try { tg.openLink(new URL('terms.html', location.href).href); } catch (e) {} });
+    if (a) a.addEventListener('click', () => { try { tg.openLink('https://telegra.ph/Happy-Cake--Terms-of-Use-11-23'); } catch (e) {} });
   }
   async function load() {
     const d = await Social.call('shop');
