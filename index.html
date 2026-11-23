@@ -183,6 +183,8 @@ if (TG_ANALYTICS.token) {
   #cupInfo b.cd { color: var(--xred); }
   #cupInfo small { display: block; opacity: .75; font-size: 11.5px; }
   #overlay .row2 .secondary { padding: 9px 16px; }
+  #overlay #tgCta { background: linear-gradient(180deg, #37aee2, #1e88c7); color: #fff; border: 2px solid #fff; border-radius: 999px;
+    padding: 10px 20px; font: 700 15px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(30,136,199,.45); cursor: pointer; margin-top: 2px; }
   /* Cửa hàng */
   #shop { position: fixed; inset: 0; z-index: 11; display: none; align-items: center; justify-content: center; background: rgba(15,18,38,.55); }
   #shop .panel { width: min(94vw, 410px); max-height: min(86vh, 700px); display: flex; flex-direction: column; color: #4a2f20;
@@ -289,6 +291,7 @@ if (TG_ANALYTICS.token) {
     <div id="bestLine"></div>
     <div id="dailyCard" class="holly" style="display:none"><div class="ic">🎯</div><div class="tx"></div><div class="chip"></div></div>
     <button id="startBtn" class="snowcap" data-i18n="start">Start</button>
+    <button id="tgCta" style="display:none" data-i18n="webCta">📱 Play on Telegram</button>
     <button id="shareBtn" class="snowcap">Invite friends</button>
     <div class="row2"><button id="openBoard" class="secondary" data-i18n="cupBtn">Leaderboard</button><button id="shopBtn" class="secondary" style="display:none" data-i18n="shopBtn">⭐ Shop</button><button id="storyBtn" class="secondary" style="display:none" data-i18n="story">📸 Story</button></div>
     <div id="inviteLine"></div>
@@ -351,6 +354,7 @@ const I18N = {
     notifyOn: "🔔 You'll get Christmas Cup results every Monday!",
     shopBtn: '⭐ Shop', shopTitle: 'Santa\'s Shop', secRevives: 'Santa revives', secSkins: 'Cake styles', revivesN: '{n} revives', tagPopular: 'Popular', tagBest: 'Best value', tagGift: 'Christmas special', it_santa_box: 'Santa\'s Gift Box', boxDesc: 'Golden cake + Gingerbread cake + {n} revives', skin_classic: 'Classic', skin_choco: 'Chocolate', skin_straw: 'Strawberry', skin_ginger: 'Gingerbread', skin_gold: 'Golden', use: 'Use', inUse: '✓ In use', revBuy: '⭐ Get {n} revives · {s} Stars', shopTerms: 'Paid with Telegram Stars. By buying, you agree to the <a>Terms</a>.<br>Need help? Send /paysupport to the bot.', shopWait: '⭐ Payment received! Delivering…', shopThanks: '🎉 Thank you! Added to your game.', shopFail: 'Couldn\'t open the payment. Please try again.',
     revSubBuy: "Get more revives and keep stacking.",
+    webCta: "📱 Play on Telegram · join the weekly Cup",
   },
   ru: {
     sub: 'Нажимай, чтобы опустить ярус торта.<br>Ставь ровно и построй самый высокий торт!',
@@ -394,6 +398,7 @@ const I18N = {
     notifyOn: "🔔 Итоги кубка будут приходить каждый понедельник!",
     shopBtn: '⭐ Магазин', shopTitle: 'Лавка Санты', secRevives: 'Спасения от Санты', secSkins: 'Виды тортов', revivesN: 'Спасений: {n}', tagPopular: 'Популярно', tagBest: 'Выгодно', tagGift: 'Рождественский набор', it_santa_box: 'Подарок Санты', boxDesc: 'Золотой торт + Имбирный торт + спасений: {n}', skin_classic: 'Классика', skin_choco: 'Шоколадный', skin_straw: 'Клубничный', skin_ginger: 'Имбирный', skin_gold: 'Золотой', use: 'Выбрать', inUse: '✓ Выбран', revBuy: '⭐ Спасений: {n} · {s} Stars', shopTerms: 'Оплата через Telegram Stars. Покупая, ты принимаешь <a>Условия</a>.<br>Нужна помощь? Отправь боту /paysupport.', shopWait: '⭐ Оплата получена! Доставляем…', shopThanks: '🎉 Спасибо! Уже в игре.', shopFail: 'Не удалось открыть оплату. Попробуй ещё раз.',
     revSubBuy: "Получи ещё спасений и строй дальше.",
+    webCta: "📱 Играть в Telegram · кубок недели",
   },
   es: {
     sub: 'Toca para soltar cada capa del pastel.<br>¡Alinéalas y construye el pastel más alto!',
@@ -437,6 +442,7 @@ const I18N = {
     notifyOn: "🔔 ¡Recibirás los resultados de la copa cada lunes!",
     shopBtn: '⭐ Tienda', shopTitle: 'Tienda de Santa', secRevives: 'Rescates de Santa', secSkins: 'Estilos de pastel', revivesN: '{n} rescates', tagPopular: 'Popular', tagBest: 'Mejor precio', tagGift: 'Especial de Navidad', it_santa_box: 'Caja de regalo de Santa', boxDesc: 'Pastel dorado + Pastel de jengibre + {n} rescates', skin_classic: 'Clásico', skin_choco: 'Chocolate', skin_straw: 'Fresa', skin_ginger: 'Jengibre', skin_gold: 'Dorado', use: 'Usar', inUse: '✓ En uso', revBuy: '⭐ {n} rescates · {s} Stars', shopTerms: 'Pago con Telegram Stars. Al comprar, aceptas los <a>Términos</a>.<br>¿Ayuda? Envía /paysupport al bot.', shopWait: '⭐ ¡Pago recibido! Entregando…', shopThanks: '🎉 ¡Gracias! Ya está en tu juego.', shopFail: 'No se pudo abrir el pago. Inténtalo de nuevo.',
     revSubBuy: "Consigue más rescates y sigue apilando.",
+    webCta: "📱 Juega en Telegram · copa semanal",
   },
   pt: {
     sub: 'Toque para soltar cada camada do bolo.<br>Alinhe-as e monte o bolo mais alto!',
@@ -480,6 +486,7 @@ const I18N = {
     notifyOn: "🔔 Você vai receber os resultados da copa toda segunda!",
     shopBtn: '⭐ Loja', shopTitle: 'Loja do Papai Noel', secRevives: 'Resgates do Papai Noel', secSkins: 'Estilos de bolo', revivesN: '{n} resgates', tagPopular: 'Popular', tagBest: 'Melhor preço', tagGift: 'Especial de Natal', it_santa_box: 'Caixa de presente do Papai Noel', boxDesc: 'Bolo dourado + Bolo de gengibre + {n} resgates', skin_classic: 'Clássico', skin_choco: 'Chocolate', skin_straw: 'Morango', skin_ginger: 'Gengibre', skin_gold: 'Dourado', use: 'Usar', inUse: '✓ Em uso', revBuy: '⭐ {n} resgates · {s} Stars', shopTerms: 'Pagamento com Telegram Stars. Ao comprar, você aceita os <a>Termos</a>.<br>Precisa de ajuda? Envie /paysupport ao bot.', shopWait: '⭐ Pagamento recebido! Entregando…', shopThanks: '🎉 Obrigado! Já está no seu jogo.', shopFail: 'Não foi possível abrir o pagamento. Tente de novo.',
     revSubBuy: "Ganhe mais resgates e continue empilhando.",
+    webCta: "📱 Jogue no Telegram · copa semanal",
   },
   id: {
     sub: 'Ketuk untuk menjatuhkan tiap lapisan kue.<br>Susun lurus dan bangun kue tertinggi!',
@@ -523,6 +530,7 @@ const I18N = {
     notifyOn: "🔔 Kamu akan dapat hasil Piala setiap Senin!",
     shopBtn: '⭐ Toko', shopTitle: 'Toko Santa', secRevives: 'Nyawa dari Santa', secSkins: 'Gaya kue', revivesN: '{n} nyawa', tagPopular: 'Populer', tagBest: 'Paling hemat', tagGift: 'Spesial Natal', it_santa_box: 'Kotak Hadiah Santa', boxDesc: 'Kue emas + Kue jahe + {n} nyawa', skin_classic: 'Klasik', skin_choco: 'Cokelat', skin_straw: 'Stroberi', skin_ginger: 'Jahe', skin_gold: 'Emas', use: 'Pakai', inUse: '✓ Dipakai', revBuy: '⭐ {n} nyawa · {s} Stars', shopTerms: 'Dibayar dengan Telegram Stars. Dengan membeli, kamu setuju dengan <a>Ketentuan</a>.<br>Butuh bantuan? Kirim /paysupport ke bot.', shopWait: '⭐ Pembayaran diterima! Sedang dikirim…', shopThanks: '🎉 Terima kasih! Sudah masuk ke game.', shopFail: 'Gagal membuka pembayaran. Coba lagi.',
     revSubBuy: "Dapatkan nyawa lagi dan lanjutkan menyusun.",
+    webCta: "📱 Main di Telegram · Piala mingguan",
   },
 };
 const LANG = (() => {
@@ -2190,6 +2198,13 @@ document.getElementById('boardBtn').addEventListener('pointerdown', e => e.stopP
 document.getElementById('boardBtn').addEventListener('click', e => { e.stopPropagation(); if (!running) Board.open(); });
 document.getElementById('openBoard').addEventListener('click', e => { e.stopPropagation(); Board.open(); });
 document.getElementById('boardClose').addEventListener('click', () => Board.close());
+// Ngoài Telegram (itch.io, trình duyệt): nút mời sang Telegram để vào bảng xếp hạng và giải Cup
+if (!inTelegram) {
+  const src = /itch\.(io|zone)|hwcdn\.net/.test(location.hostname + ' ' + document.referrer) ? 'itch' : 'web';
+  const cta = document.getElementById('tgCta');
+  cta.style.display = '';
+  cta.addEventListener('click', e => { e.stopPropagation(); window.open(`${CONFIG.BOT_LINK}?startapp=${src}`, '_blank'); });
+}
 document.getElementById('shopBtn').addEventListener('click', e => { e.stopPropagation(); Shop.open(); });
 document.getElementById('shopClose').addEventListener('click', () => Shop.close());
 document.getElementById('shop').addEventListener('click', e => { if (e.target.id === 'shop') Shop.close(); });
