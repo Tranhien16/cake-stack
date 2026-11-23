@@ -1685,6 +1685,7 @@ const CONFIG = {
   STORY_IMAGE: 'https://tranhien16.github.io/cake-stack/story.jpg', // ảnh nền Story (upload story.jpg lên repo)
   ADS_BLOCK_ID: '60835',         // AdsGram > Ad block (Rewarded) > Copy BlockID, ví dụ '12345'
   ADS_DEBUG: false,         // true = AdsGram hiện quảng cáo thử (khi đang kiểm tra)
+  INLINE_SHARE: true,     // thẻ chia sẻ qua @cakestack_bot (cần bật Inline Mode trong BotFather)
   LIMIT: 20,
 };
 const Board = (() => {
@@ -1895,6 +1896,14 @@ const Social = (() => {
         ? t('shareScore', { n: score })
         : t('shareInvite');
       const url = link();
+      // Ưu tiên thẻ chia sẻ của bot (inline mode): chọn chat -> gửi thẻ có ảnh + nút Play
+      if (inTelegram && CONFIG.INLINE_SHARE && tg.switchInlineQuery && tg.isVersionAtLeast && tg.isVersionAtLeast('6.7')) {
+        try {
+          tg.switchInlineQuery(challenge ? String(score) : '', ['users', 'groups', 'channels']);
+          setTimeout(() => toast(t('sent')), 900);
+          return;
+        } catch (e) { /* bot chưa bật inline mode: dùng cách cũ */ }
+      }
       if (inTelegram && tg.openTelegramLink) {
         tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text));
         setTimeout(() => toast(t('sent')), 900);
