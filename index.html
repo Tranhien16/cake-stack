@@ -2200,7 +2200,10 @@ document.getElementById('openBoard').addEventListener('click', e => { e.stopProp
 document.getElementById('boardClose').addEventListener('click', () => Board.close());
 // Ngoài Telegram (itch.io, trình duyệt): nút mời sang Telegram để vào bảng xếp hạng và giải Cup
 if (!inTelegram) {
-  const src = /itch\.(io|zone)|hwcdn\.net/.test(location.hostname + ' ' + document.referrer) ? 'itch' : 'web';
+  const where = location.hostname + ' ' + document.referrer;
+  const src = /itch\.(io|zone)|hwcdn\.net/.test(where) ? 'itch'
+            : /newgrounds|ungrounded/.test(where) ? 'ng'
+            : /gamejolt/.test(where) ? 'gj' : 'web';
   const cta = document.getElementById('tgCta');
   cta.style.display = '';
   cta.addEventListener('click', e => { e.stopPropagation(); window.open(`${CONFIG.BOT_LINK}?startapp=${src}`, '_blank'); });
