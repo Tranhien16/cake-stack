@@ -2170,7 +2170,8 @@ const Ads = (() => {
     return ctrl;
   }
   // Ngoài Telegram và chưa có BlockID: chạy quảng cáo giả để xem thử luồng
-  const demo = () => !CONFIG.ADS_BLOCK_ID && !inTelegram;
+  // Quảng cáo giả chỉ để thử trên máy (file://). Ngoài Telegram (itch.io, cổng game) không có quảng cáo.
+  const demo = () => !CONFIG.ADS_BLOCK_ID && !inTelegram && location.protocol === 'file:';
   function fakeAd() {
     return new Promise(resolve => {
       const box = document.getElementById('fakeAd'), cnt = document.getElementById('fakeAdCount');
@@ -2179,7 +2180,7 @@ const Ads = (() => {
     });
   }
   return {
-    available() { return !!controller() || demo(); },
+    available() { return (inTelegram && !!controller()) || demo(); },
     show() {
       const c = controller();
       if (c) return c.show();          // resolve khi xem hết, reject khi bỏ qua / lỗi / hết quảng cáo
