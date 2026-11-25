@@ -6,6 +6,7 @@
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Happy Cake – Five in a Row</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--bg1:#0f1b3d;--bg2:#1d2c5a;--gold:#f1c24a;--red:#c8283a;--green:#2f9b58;--cream:#fff7ea}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
@@ -75,9 +76,9 @@
     background:radial-gradient(circle at 10px 16px,#fff 10px,transparent 11px) 0 0/22px 16px repeat-x;filter:drop-shadow(0 2px 1px rgba(0,0,0,.2))}
   .holly{position:absolute;font-size:22px;z-index:4}
   .holly.l{left:-14px;bottom:-14px}.holly.r{right:-14px;bottom:-14px}
-  #board{width:100%;height:100%;display:grid;grid-template-columns:repeat(15,minmax(0,1fr));grid-template-rows:repeat(15,minmax(0,1fr))}
+  #board{width:100%;height:100%;display:grid;grid-template-columns:repeat(var(--n,15),minmax(0,1fr));grid-template-rows:repeat(var(--n,15),minmax(0,1fr))}
   .c{border-right:1px solid rgba(140,90,45,.35);border-bottom:1px solid rgba(140,90,45,.35);display:flex;align-items:center;justify-content:center;font-size:min(4.4vw,2.5vh,24px);line-height:1;cursor:pointer;position:relative}
-  .c:nth-child(15n){border-right:0}.c:nth-child(n+211){border-bottom:0}
+  .c.er{border-right:0}.c.eb{border-bottom:0}
   .c.last{background:rgba(241,194,74,.45)}
   .c.win{background:rgba(47,155,88,.55);animation:glow .8s infinite alternate}
   .c.drop span{animation:drop .25s ease-out}
@@ -135,7 +136,7 @@
     #lvlBox,#santaRow,#bar{width:100%!important}
     #bar{flex-wrap:wrap}
     #score{justify-content:center}
-    .c{font-size:calc(min(calc(100vh - 118px),calc(100vw - 300px)) / 15 * .62)!important}
+    .c{font-size:calc(min(calc(100vh - 118px),calc(100vw - 300px)) / var(--n,15) * .62)!important}
   }
 
   #topBtn{position:fixed;right:10px;top:10px;z-index:5;width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);background:linear-gradient(180deg,#e2563f,#c8283a);font-size:20px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.35)}
@@ -150,13 +151,121 @@
   #cloth,#garland{width:min(500px,96vw,calc(100vh - 425px))}
   #bar .b{font-size:13px!important;padding-left:2px!important;padding-right:2px!important;white-space:nowrap}
   #toastTg{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:60;background:#fff;color:#2b2140;border:2px solid var(--gold);border-radius:12px;padding:10px 14px;font-weight:800;font-size:14px;max-width:90vw;text-align:center;display:none;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+
+  .c.pend{background:rgba(241,194,74,.55);box-shadow:inset 0 0 0 2px #c8961e}
+  .c.pend span{opacity:.55;animation:pendp .8s infinite alternate}
+  @keyframes pendp{to{transform:scale(1.15)}}
+  @media (max-aspect-ratio: 11/10){
+    #app{padding-left:4px!important;padding-right:4px!important}
+    #cloth{padding:4px!important;border-radius:10px!important}
+    #garland{height:12px!important;margin-bottom:2px!important}
+    #wrap{border-width:3px!important;padding:1px!important}
+    .c{font-size:calc(var(--cell,26px) * .82)!important}
+    #rules{display:none}
+    #santaCv{width:76px!important;height:84px!important;margin:-16px -6px -8px -8px!important}
+    #say{font-size:12px!important;padding:5px 10px!important}
+    #lvlBox{margin-bottom:4px!important;padding:4px 10px 4px 4px!important}
+    #lvlBadge{width:48px!important;height:48px!important}
+    #lvlBadge b{font-size:21px!important}
+    #bar{margin-top:10px!important}
+  }
+
+  @media (max-aspect-ratio: 11/10) and (max-height: 800px){
+    #shelf{height:40px!important;padding-bottom:4px!important;border-bottom-width:6px!important}
+    #shelf .jar{transform:scale(.7);transform-origin:bottom}
+    #shelf .hang{font-size:15px!important}
+    #snow{height:40px!important}
+    #app{padding-top:44px!important}
+    #topBtn{width:36px!important;height:36px!important;top:4px!important;font-size:16px!important}
+    h1{font-size:16px!important;margin-bottom:4px!important}
+    h1 span{font-size:11px!important}
+    #lvlBox{padding:3px 8px 3px 3px!important;gap:8px!important}
+    #lvlBadge{width:40px!important;height:40px!important;border-width:2px!important}
+    #lvlBadge span{font-size:6px!important}
+    #lvlBadge b{font-size:18px!important}
+    #lvlName{font-size:13px!important}
+    #lvlBar{height:7px!important;margin:2px 0!important}
+    #lvlNext{font-size:10px!important}
+    #santaCv{width:60px!important;height:66px!important;margin:-10px -4px -6px -6px!important}
+    #santaRow{margin:0!important}
+    #say{font-size:11px!important;padding:4px 8px!important}
+    #score{margin-bottom:0!important}
+    #score .pl{padding:2px 10px!important;font-size:13px!important}
+    #score .pl b{font-size:16px!important}
+    #mode{padding:2px 8px!important}
+    #msg{font-size:12px!important;min-height:14px!important;margin:1px 0!important}
+    #bar{margin-top:8px!important}
+    #bar .b{padding-top:10px!important;padding-bottom:6px!important}
+  }
+  #cloth{background-position:center center!important}
+
+  #sndBtn{position:fixed;left:10px;top:10px;z-index:5;width:40px;height:40px;border-radius:50%;border:2px solid var(--gold);
+    background:linear-gradient(180deg,#36a65c,#1f6e3a);font-size:18px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.35);color:#fff}
+  @media (max-aspect-ratio: 11/10) and (max-height: 800px){ #sndBtn{width:34px;height:34px;top:4px;font-size:15px} }
+
+  /* ===== Felt craft theme ===== */
+  :root{--felt:#2f5d4a;--felt2:#244a3b;--cream:#f5ecd9;--red:#c23b3b;--gold:#f2b84b;--brown:#8c5a3c;--ink:#2b1d14}
+  html,body{font-family:Nunito,"Trebuchet MS",system-ui,sans-serif!important;color:var(--cream)!important;
+    background-color:var(--felt)!important;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.5px),radial-gradient(rgba(0,0,0,.09) 1px,transparent 1.5px)!important;background-size:5px 5px,7px 7px!important}
+  #shelf,#garland,#snow,.holly{display:none!important}
+  #app{padding-top:12px!important}
+  h1{font-family:Sniglet,Nunito,sans-serif!important;font-weight:800;font-size:24px!important;text-shadow:none!important;color:var(--cream);margin:4px 0 8px!important}
+  h1 span{color:var(--gold)!important;font-family:Nunito,sans-serif!important;font-weight:800;letter-spacing:0!important}
+  #lvlBox{background:var(--red)!important;border:0!important;box-shadow:0 0 0 3px var(--red)!important;outline:2px dashed var(--cream);outline-offset:-6px;border-radius:16px!important;padding:8px 14px 8px 8px!important}
+  #lvlBox:before{display:none!important}
+  #lvlBadge{background:var(--gold)!important;color:#5b3a08!important;border:0!important;box-shadow:none!important;border-radius:50% 50% 46% 46%/42% 42% 58% 58%!important;outline:2px dashed #8a5a12;outline-offset:-5px}
+  #lvlBadge b{font-family:Sniglet,Nunito,sans-serif!important;font-weight:800}
+  #lvlBadge span{letter-spacing:0!important;font-weight:800}
+  #lvlName{font-family:Sniglet,Nunito,sans-serif;font-weight:800!important;font-size:18px!important;color:var(--cream)!important}
+  #lvlBar{background:#8e2929!important;border:0!important;height:9px!important}
+  #lvlBar i{background:var(--gold)!important}
+  #lvlNext{color:var(--cream)!important;font-weight:700!important}
+  #say{background:var(--cream)!important;color:var(--ink)!important;border-radius:16px 16px 16px 4px!important;font-weight:700!important}
+  #say:before{display:none!important}
+  .pl{background:var(--felt2)!important;border:2px dashed transparent!important}
+  .pl.on{border-color:var(--gold)!important;box-shadow:none!important}
+  #msg{color:var(--gold)!important}
+  #cloth{background:var(--brown)!important;border-radius:20px!important;padding:9px!important;box-shadow:0 6px 0 #5e3b26!important;outline:2px dashed var(--cream);outline-offset:-5px}
+  #wrap{background:#a36c4a!important;border:0!important;box-shadow:none!important;border-radius:10px!important;padding:0!important}
+  .c{border-right:2px dashed rgba(245,236,217,.55)!important;border-bottom:2px dashed rgba(245,236,217,.55)!important}
+  .c.er{border-right:0!important}.c.eb{border-bottom:0!important}
+  .c span:not(:empty){width:86%;height:86%;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle,transparent 58%,rgba(0,0,0,.12) 60%,transparent 66%),var(--cream);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .c[data-p="1"] span:not(:empty){background:radial-gradient(circle,transparent 58%,rgba(0,0,0,.18) 60%,transparent 66%),#e07a6a}
+  .c[data-p="2"] span:not(:empty){background:radial-gradient(circle,transparent 58%,rgba(0,0,0,.12) 60%,transparent 66%),#d9e6ef}
+  .c.last{background:rgba(242,184,75,.45)!important}
+  .c.win{background:rgba(245,236,217,.45)!important}
+  @keyframes glow{to{background:rgba(242,184,75,.75)}}
+  .b{background:var(--cream)!important;color:var(--ink)!important;border:0!important;border-radius:16px!important;text-shadow:none!important;
+     box-shadow:0 4px 0 rgba(0,0,0,.28)!important;outline:2px dashed #b9ad97;outline-offset:-6px;padding:12px 4px!important;font-family:Nunito,sans-serif}
+  .b:before,.b:after,#hintBtn:after,#skinBtn:after{display:none!important;content:none!important}
+  #newBtn{background:var(--red)!important;color:var(--cream)!important;outline-color:var(--cream);font-family:Sniglet,Nunito,sans-serif;text-shadow:none!important}
+  #hintBtn{background:var(--gold)!important;color:#5b3a08!important;outline-color:#8a5a12}
+  #skinBtn{display:flex;align-items:center;justify-content:center}
+  #mode{background:var(--felt2)!important;color:var(--cream)!important;border:2px dashed var(--cream)!important;outline:0}
+  .tag{background:var(--ink)!important;color:var(--cream)!important;border:0!important}
+  #sndBtn,#topBtn{background:var(--felt2)!important;border:2px dashed var(--cream)!important;color:var(--cream);display:flex;align-items:center;justify-content:center;box-shadow:none!important}
+  #topBtn{background:var(--red)!important}
+  .ov{background:rgba(20,40,32,.8)!important}
+  .card{background:var(--cream)!important;color:var(--ink)!important;border:0!important;outline:2px dashed #b9ad97;outline-offset:-7px;border-radius:20px!important}
+  .card h2{font-family:Sniglet,Nunito,sans-serif!important;color:var(--red)!important}
+  .card .btn{border:0!important;outline:2px dashed rgba(245,236,217,.7);outline-offset:-5px;box-shadow:0 3px 0 rgba(0,0,0,.25)!important}
+  .card .btn.g{background:var(--felt)!important}.card .btn.n{background:var(--red)!important}
+  #lvlUp{background:var(--cream)!important;color:var(--ink)!important;border:0!important;outline:2px dashed var(--red);outline-offset:-7px}
+  #lvlUp .big{font-family:Sniglet,Nunito,sans-serif!important;color:var(--red)!important}
+  .ad{background:#111!important;color:#fff!important;outline:0}
+  @media (max-aspect-ratio: 11/10) and (max-height: 800px){ h1{font-size:19px!important;margin:0 0 4px!important} #app{padding-top:6px!important} #lvlName{font-size:15px!important} }
+  @media (min-aspect-ratio: 11/10){ #app{padding-top:20px!important} }
+
+  @media (max-aspect-ratio: 11/10){ .c span:not(:empty){font-size:.74em;width:92%;height:92%} h1{padding-left:58px;text-align:left;align-self:stretch} }
 </style>
 </head>
 <body>
 <div id="shelf"><div class="win"></div><span class="hang">🥄</span><div class="jar">FLOUR</div><div class="jar">SUGAR</div><span style="font-size:26px">🎂</span><div class="jar">COCOA</div><span class="hang">🍴</span></div>
 <canvas id="snow"></canvas>
-<button id="topBtn" aria-label="Leaderboard">🏆</button>
+<button id="topBtn" aria-label="Leaderboard"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M8 20h8"/></svg></button>
 <div id="toastTg"></div>
+<button id="sndBtn" aria-label="Sound"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9c1.5 1.5 1.5 4.5 0 6"/><path d="M19 6c3 3 3 9 0 12"/></svg></button>
 <div id="app">
   <h1>Happy Cake <span>Five in a Row · Gomoku</span></h1>
   <div id="lvlBox">
@@ -172,9 +281,9 @@
   <div id="cloth"><div id="wrap"><div id="board"></div></div></div>
   <div id="bar">
     <button class="b r" id="newBtn">New game</button>
-    <button class="b n" id="skinBtn" style="flex:.55">🎨</button>
-    <button class="b n" id="undoBtn">↩ Undo <span class="tag" id="undoTag">FREE</span></button>
-    <button class="b n" id="hintBtn">💡 Hint <span class="tag">AD</span></button>
+    <button class="b n" id="skinBtn" style="flex:.55" aria-label="Pieces"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="9" r="4"/><circle cx="16" cy="9" r="4"/><circle cx="12" cy="16" r="4"/></svg></button>
+    <button class="b n" id="undoBtn">Undo <span class="tag" id="undoTag">FREE</span></button>
+    <button class="b n" id="hintBtn">Hint <span class="tag">AD</span></button>
 
   </div>
   <div id="rules">Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!</div>
@@ -194,6 +303,110 @@
   <button class="btn g" id="reviveBtn">▶ Watch ad: take back 2 moves & keep playing</button>
   <button class="btn n" id="loseNew">New game</button></div></div>
 <script>
+// ---- Sound: Christmas music + game sounds (Web Audio, no files) ----
+const Snd = (() => {
+  let ac = null, master, musicBus, sfxBus, noiseBuf, timer = null, playing = false, ducked = false;
+  let muted = false;
+  try { muted = localStorage.getItem('caroMuted') === '1'; } catch (e) {}
+  const F = n => 440 * Math.pow(2, (n - 69) / 12);
+  // Public-domain carols, [MIDI note, beats]
+  const JINGLE = { beat: 60 / 132, mel: (() => { const E=76,Fh=77,G=79,C=72,D=74; return [
+    [E,1],[E,1],[E,2],[E,1],[E,1],[E,2],[E,1],[G,1],[C,1.5],[D,.5],[E,4],
+    [Fh,1],[Fh,1],[Fh,1.5],[Fh,.5],[Fh,1],[E,1],[E,1],[E,.5],[E,.5],[E,1],[D,1],[D,1],[E,1],[D,2],[G,2],
+    [E,1],[E,1],[E,2],[E,1],[E,1],[E,2],[E,1],[G,1],[C,1.5],[D,.5],[E,4],
+    [Fh,1],[Fh,1],[Fh,1.5],[Fh,.5],[Fh,1],[E,1],[E,1],[E,.5],[E,.5],[G,1],[G,1],[Fh,1],[D,1],[C,4]]; })(),
+    bass: [48,48,48,48,53,48,43,43,48,48,48,48,53,48,43,48] };
+  const DECK = { beat: 60 / 120, mel: (() => { const G=79,Fh=77,E=76,D=74,C=72,B=71,A=81,Bh=83,C6=84,Fs=78;
+    const l1=[[G,1.5],[Fh,.5],[E,1],[D,1],[C,1],[D,1],[E,1],[C,1]], fa=[[D,.5],[E,.5],[Fh,.5],[D,.5],[E,1.5],[D,.5],[C,1],[B,1],[C,2]];
+    return [...l1,...fa,...l1,...fa,
+      [D,1.5],[E,.5],[Fh,1],[D,1],[E,1.5],[Fh,.5],[G,1],[D,1],[E,.5],[Fs,.5],[G,1],[A,.5],[Bh,.5],[C6,1],[Bh,1],[A,1],[G,2],
+      ...l1,[A,.5],[A,.5],[A,.5],[A,.5],[G,1.5],[Fh,.5],[E,1],[D,1],[C,2]]; })(),
+    bass: [48,48,55,48,48,48,55,48,55,55,50,55,48,48,55,48] };
+  const SONGS = [JINGLE, DECK];
+  let song = 0, idx = 0, pos = 0, nextNote = 0, nextTime = 0;
+
+  function init() {
+    if (ac) return;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    ac = new AC();
+    master = ac.createGain(); master.gain.value = muted ? 0 : 0.85; master.connect(ac.destination);
+    musicBus = ac.createGain(); musicBus.gain.value = 0.22; musicBus.connect(master);
+    sfxBus = ac.createGain(); sfxBus.gain.value = 0.6; sfxBus.connect(master);
+    noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    document.addEventListener('visibilitychange', () => { if (!ac) return; document.hidden ? ac.suspend() : ac.resume(); });
+  }
+  function bell(f, t, dur, vol, bus = sfxBus) {
+    [[1,1],[2,.35],[3.01,.12],[4.2,.06]].forEach(([m,g]) => { const o = ac.createOscillator(), v = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f * m; v.gain.setValueAtTime(0.0001, t); v.gain.exponentialRampToValueAtTime(vol * g, t + 0.008);
+      v.gain.exponentialRampToValueAtTime(0.0001, t + dur * (m === 1 ? 1 : .5)); o.connect(v).connect(bus); o.start(t); o.stop(t + dur + .05); });
+  }
+  function tone(type, f0, f1, t, dur, vol, bus = sfxBus) {
+    const o = ac.createOscillator(), v = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    v.gain.setValueAtTime(0.0001, t); v.gain.exponentialRampToValueAtTime(vol, t + .01); v.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(v).connect(bus); o.start(t); o.stop(t + dur + .05);
+  }
+  function noise(t, dur, vol, type, f0, f1, q = 1, bus = sfxBus) {
+    const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), v = ac.createGain(); s.buffer = noiseBuf; fl.type = type; fl.Q.value = q;
+    fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(f1, t + dur); v.gain.setValueAtTime(vol, t); v.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(fl).connect(v).connect(bus); s.start(t, Math.random() * .5); s.stop(t + dur + .02);
+  }
+  const sleigh = (t, vol, bus) => { noise(t, .09, vol, 'highpass', 7000, 9000, .7, bus); noise(t + .02, .06, vol * .6, 'bandpass', 11000, 10000, 4, bus); };
+  function schedule() {
+    const S = SONGS[song], total = S.mel.reduce((a, [, b]) => a + b, 0), B = S.beat;
+    while (nextTime < ac.currentTime + .25) {
+      if (Math.abs(pos - nextNote) < 1e-6 && idx < S.mel.length) {
+        const [n, b] = S.mel[idx]; bell(F(n), nextTime, Math.min(1.2, b * B * 1.4), .5, musicBus); nextNote += b; idx++; }
+      const bar = Math.floor(pos / 4) % S.bass.length;
+      if (pos % 2 === 0) tone('triangle', F(S.bass[bar]), F(S.bass[bar]) * .995, nextTime, B * 1.6, .3, musicBus);
+      if (song === 0) sleigh(nextTime, pos % 1 === 0 ? .14 : .08, musicBus);
+      else if (pos % 1 === 0) sleigh(nextTime, .07, musicBus);
+      nextTime += B / 2; pos += .5;
+      if (pos >= total) { song = (song + 1) % SONGS.length; idx = 0; pos = 0; nextNote = 0; nextTime += B * 2; return; }
+    }
+  }
+  const pent = [0, 2, 4, 7, 9, 12, 14, 16];
+  let placeN = 0;
+  const api = {
+    get muted() { return muted; },
+    unlock() { init(); if (ac && ac.state === 'suspended') ac.resume(); },
+    startMusic() { if (!ac || playing) return; playing = true; song = 0; idx = 0; pos = 0; nextNote = 0; nextTime = ac.currentTime + .15;
+      timer = setInterval(schedule, 50); schedule(); },
+    toggleMute() { muted = !muted; try { localStorage.setItem('caroMuted', muted ? '1' : '0'); } catch (e) {}
+      if (ac) master.gain.setTargetAtTime(muted || ducked ? 0 : .85, ac.currentTime, .03); return muted; },
+    duck(on) { ducked = on; if (ac) master.gain.setTargetAtTime(muted || ducked ? 0 : .85, ac.currentTime, .05);
+      clearTimeout(api._dh); if (on) api._dh = setTimeout(() => api.duck(false), 35000); },
+    // you place a cake: wooden "tok" + a sweet bell climbing a pentatonic scale
+    place(p) { if (!ac) return; const t = ac.currentTime;
+      if (p === 1) { tone('sine', 620, 240, t, .09, .5); noise(t, .04, .22, 'bandpass', 2400, 1400, 3);
+        bell(F(79 + pent[placeN++ % pent.length]), t + .02, .55, .28); }
+      else { tone('sine', 300, 140, t, .12, .45); noise(t, .1, .18, 'lowpass', 1800, 400); bell(F(64), t + .03, .4, .12); } },
+    tick() { if (!ac) return; const t = ac.currentTime; tone('sine', 1400, 1100, t, .05, .15); },
+    cheer() { if (!ac) return; const t = ac.currentTime; [76, 79, 84].forEach((n, i) => bell(F(n), t + i * .07, .5, .25)); sleigh(t, .2); },
+    warn() { if (!ac) return; const t = ac.currentTime; tone('triangle', F(58), F(57), t, .22, .3); tone('triangle', F(55), F(54), t + .22, .35, .3); },
+    sparkle() { if (!ac) return; const t = ac.currentTime; [88, 91, 96, 100].forEach((n, i) => bell(F(n), t + i * .05, .4, .15)); },
+    newGame() { if (!ac) return; placeN = 0; const t = ac.currentTime; for (let i = 0; i < 5; i++) sleigh(t + i * .06, .25); bell(F(84), t + .05, .5, .22); },
+    hoho() { if (!ac) return; const t0 = ac.currentTime + .05;
+      for (let i = 0; i < 3; i++) { const t = t0 + i * .26; noise(t, .05, .2, 'bandpass', 1200, 900, 1);
+        const o = ac.createOscillator(), f1 = ac.createBiquadFilter(), f2 = ac.createBiquadFilter(), v = ac.createGain();
+        o.type = 'sawtooth'; o.frequency.setValueAtTime(135 - i * 6, t + .04); o.frequency.exponentialRampToValueAtTime(105 - i * 6, t + .22);
+        f1.type = 'bandpass'; f1.frequency.value = 500; f1.Q.value = 6; f2.type = 'bandpass'; f2.frequency.value = 850; f2.Q.value = 8;
+        v.gain.setValueAtTime(0.0001, t + .04); v.gain.exponentialRampToValueAtTime(.9, t + .07); v.gain.exponentialRampToValueAtTime(0.0001, t + .24);
+        o.connect(f1).connect(v); o.connect(f2).connect(v); v.connect(sfxBus); o.start(t + .04); o.stop(t + .26); } },
+    win() { if (!ac) return; const t = ac.currentTime; [72, 76, 79, 84, 88, 91].forEach((n, i) => bell(F(n), t + i * .08, .9, .38));
+      for (let i = 0; i < 10; i++) sleigh(t + i * .06, .3); setTimeout(() => api.hoho(), 600); },
+    levelUp() { if (!ac) return; const t = ac.currentTime; [79, 84, 88, 91, 96].forEach((n, i) => bell(F(n), t + i * .06, .7, .3)); },
+    fanfare() { if (!ac) return; const t = ac.currentTime; [[72,0],[76,.12],[79,.24],[84,.36],[79,.6],[84,.72]].forEach(([n, d]) => { bell(F(n), t + d, 1, .35); tone('triangle', F(n - 24), F(n - 24), t + d, .25, .2); });
+      for (let i = 0; i < 12; i++) sleigh(t + i * .07, .28); },
+    lose() { if (!ac) return; const t = ac.currentTime + .1;
+      [[67,.32],[66,.32],[65,.32],[64,1]].forEach(([n, d], i) => { const st = t + i * .36, o = ac.createOscillator(), fl = ac.createBiquadFilter(), v = ac.createGain();
+        o.type = 'sawtooth'; o.frequency.value = F(n - 12); fl.type = 'lowpass'; fl.frequency.setValueAtTime(400, st); fl.frequency.linearRampToValueAtTime(1100, st + .1); fl.frequency.linearRampToValueAtTime(500, st + d);
+        v.gain.setValueAtTime(0.0001, st); v.gain.exponentialRampToValueAtTime(.3, st + .04); v.gain.setValueAtTime(.3, st + d - .08); v.gain.exponentialRampToValueAtTime(0.0001, st + d);
+        o.connect(fl).connect(v).connect(sfxBus); o.start(st); o.stop(st + d + .05); }); },
+  };
+  return api;
+})();
+
 const tg = window.Telegram && window.Telegram.WebApp;
 const inTelegram = !!(tg && tg.initData);
 const CONFIG = {
@@ -210,7 +423,7 @@ const LANG = (() => { let c = '';
   if (['be','kk','ky','uz','tg','uk'].includes(c)) c = 'ru'; if (c === 'ms') c = 'id'; if (['gl','ca'].includes(c)) c = 'es';
   return I18N[c] ? c : 'en'; })();
 function T(s, v) { let r = (I18N[LANG] && I18N[LANG][s]) || s; if (v) for (const k in v) r = r.split('{' + k + '}').join(v[k]); return r; }
-const N=15, P=['','🎂','⛄'], $=id=>document.getElementById(id);
+const N=(Math.min(innerWidth,innerHeight)<560?13:15), MID=Math.floor(N/2)*N+Math.floor(N/2), P=['','🎂','⛄'], $=id=>document.getElementById(id);
 const SKINS=[{e:'🎂',n:'Happy Cake',l:1},{e:'🎅',n:'Santa',l:4},{e:'🦌',n:'Reindeer',l:7},{e:'🍪',n:'Gingerbread',l:10},{e:'🎁',n:'Gift',l:13},{e:'🧁',n:'Cupcake',l:16},{e:'🔔',n:'Bell',l:19},{e:'🌟',n:'Golden Star',l:22},{e:'👑',n:'Snow King',l:28}];
 let skin='🎂'; try{ skin=localStorage.getItem('caroSkin')||'🎂'; }catch(e){}
 function setSkin(e){ const old=P[1]; P[1]=e; skin=e; try{localStorage.setItem('caroSkin',e);}catch(x){}
@@ -442,8 +655,14 @@ var showLevel = function(pop){ $('lvlN').textContent=level; $('lvlName').textCon
 function aiParams(L){ return { mistake:Math.max(0,0.4-0.035*(L-1)), noise:700*Math.pow(0.72,L-1), atk:Math.min(1.12,0.55+0.04*L), def:Math.min(1,0.35+0.05*L) }; }
 let B, hist, turn, over, wins=[0,0], first=1, lastI=-1;
 const board=$('board');
-for(let i=0;i<N*N;i++){ const c=document.createElement('div'); c.className='c'; c.dataset.i=i; c.innerHTML='<span></span>'; board.appendChild(c); }
+document.documentElement.style.setProperty('--n',N);
+for(let i=0;i<N*N;i++){ const c=document.createElement('div'); c.className='c'+(i%N===N-1?' er':'')+(i>=N*(N-1)?' eb':''); c.dataset.i=i; c.innerHTML='<span></span>'; board.appendChild(c); }
+const TOUCH = matchMedia('(pointer: coarse)').matches; let pend=-1;
+function clearPend(){ if(pend>=0){ const p=board.children[pend]; p.classList.remove('pend'); if(!B[pend]) p.firstChild.textContent=''; } pend=-1; }
 board.addEventListener('click',e=>{ const c=e.target.closest('.c'); if(!c||over) return; const i=+c.dataset.i; if(B[i]) return;
+  if(TOUCH){ if(!twoP() && turn!==1) return;
+    if(pend!==i){ clearPend(); pend=i; c.classList.add('pend'); Snd.tick(); c.firstChild.textContent = twoP()? (turn===1?P[1]:'⛄') : P[1]; return; }
+    c.classList.remove('pend'); pend=-1; }
   document.querySelectorAll('.c.hint').forEach(h=>h.classList.remove('hint'));
   if(twoP()){ play(i,turn); if(!over) turn=3-turn; return; }
   if(turn!==1) return; play(i,1); if(!over){ turn=2; setTimeout(aiMove,320);} });
@@ -454,31 +673,31 @@ function line(i,p){ const x=i%N,y=(i/N)|0;
     for(const s of [1,-1]){ let k=1; while(at(x+dx*k*s,y+dy*k*s)===p){ cells.push((y+dy*k*s)*N+x+dx*k*s); k++; } }
     if(cells.length>=5) return cells; } return null; }
 function play(i,p){
-  B[i]=p; hist.push(i); const c=board.children[i]; c.firstChild.textContent=P[p]; c.classList.add('drop'); setTimeout(()=>c.classList.remove('drop'),260);
+  Snd.place(p); B[i]=p; hist.push(i); const c=board.children[i]; c.firstChild.textContent=P[p]; c.dataset.p=p; c.classList.add('drop'); setTimeout(()=>c.classList.remove('drop'),260);
   if(lastI>=0) board.children[lastI].classList.remove('last'); lastI=i; c.classList.add('last');
   const w=line(i,p);
   if(w){ over=true; w.forEach(k=>board.children[k].classList.add('win')); wins[p-1]++; $('s1').textContent=wins[0]; $('s2').textContent=wins[1];
     $('msg').textContent = twoP() ? (p===1?P[1]+' '+T('Player 1 wins!'):'⛄ '+T('Player 2 wins!')) : p===1 ? '🎉 '+T('HO HO HO! You beat the Snowman! 🎉🎂') : T('⛄ The Snowman wins this time!');
-    first=3-first; gamesSinceAd++;
+    first=3-first; gamesSinceAd++; if(!twoP()&&p===2) Snd.lose(); else Snd.win();
     if(twoP()) santa('happy', (p===1?T('Player 1 wins!'):T('Player 2 wins!'))+' '+T('What a game! 🎉'));
     else if(p===1) santa('happy',T('HO HO HO! You beat the Snowman! 🎉🎂'));
     else santa('sad',T('Oh no… the Snowman won 😭 Try again?'));
     if(!twoP() && p===2) setTimeout(()=>$('loseOv').style.display='flex', 1200);
-    if(!twoP() && p===1){ level++; try{localStorage.setItem('caroLevel',level);}catch(e){} showLevel(true);
+    if(!twoP() && p===1){ level++; try{localStorage.setItem('caroLevel',level);}catch(e){} showLevel(true); setTimeout(()=>Snd.levelUp(),900);
       $('lvlUpN').textContent=level; $('lvlUpName').textContent=rankName(level);
       const newRank = rankName(level)!==rankName(level-1), unl=SKINS.find(k=>k.l===level);
       if(newRank||unl){ setTimeout(()=>{ $('rankTxt').textContent=T('Level {n}',{n:level})+' · '+rankName(level); $('rankSkin').textContent=unl?unl.e:'🏆';
           $('rankUnlock').textContent=unl?T('New piece unlocked: {n}!',{n:T(unl.n)}):''; $('rankUse').textContent=unl?T('Use new piece & continue'):T('Continue');
           $('rankUse').onclick=()=>{ if(unl) setSkin(unl.e); $('rankOv').style.display='none'; };
-          $('rankOv').style.display='flex'; },1300); }
+          Snd.fanfare(); $('rankOv').style.display='flex'; },1300); }
       else { $('lvlUp').style.display='block'; setTimeout(()=>$('lvlUp').style.display='none',1800); }
-      $('msg').textContent=T('🎉 You win! Next: Level {n} – the Snowman gets smarter!',{n:level}); }
+      $('msg').textContent=T('🎉 You win! Next: Level {n} – the Snowman gets smarter!',{n:level}); autoNext(); }
     return; }
   if(hist.length===N*N){ over=true; $('msg').textContent=T('Draw – the board is full!'); return; }
   $('p1').classList.toggle('on',p===2); $('p2').classList.toggle('on',p===1);
   if(!twoP()){ const t=threat(p);
-    if(p===1 && t>=3 && Math.random()<.7) santa('happy',CHEER[Math.floor(Math.random()*CHEER.length)]);
-    else if(p===2 && t>=4) santa('sad',WARN[Math.floor(Math.random()*WARN.length)]);
+    if(p===1 && t>=3 && Math.random()<.7) Snd.cheer(), santa('happy',CHEER[Math.floor(Math.random()*CHEER.length)]);
+    else if(p===2 && t>=4) Snd.warn(), santa('sad',WARN[Math.floor(Math.random()*WARN.length)]);
     else if(p===2 && t===3 && Math.random()<.5) santa('',WARN[Math.floor(Math.random()*WARN.length)]); }
   $('msg').textContent = twoP() ? (p===1?'⛄ '+T('Player 2\'s turn'):P[1]+' '+T('Player 1\'s turn')) : p===2 ? T('Your turn') : T('Snowman is thinking…');
 }
@@ -499,7 +718,7 @@ function near(i){ const x=i%N,y=(i/N)|0; for(let dy=-2;dy<=2;dy++)for(let dx=-2;
 function aiMove(){
   if(over) return;
   const A=aiParams(twoP()?1:level); let best=-1, bs=-1, cands=[];
-  if(!hist.length){ play(7*N+7,2); turn=1; return; }
+  if(!hist.length){ play(MID,2); turn=1; return; }
   for(let i=0;i<N*N;i++){ if(B[i]||!near(i)) continue;
     const atk=cellScore(i,2), def=cellScore(i,1);
     let s = atk*A.atk + def*A.def + Math.random()*A.noise;
@@ -508,16 +727,18 @@ function aiMove(){
   if(Math.random()<A.mistake){ cands.sort((a,b)=>b[0]-a[0]); best=cands[Math.min(cands.length-1,1+Math.floor(Math.random()*4))][1]; }
   play(best,2); turn=1;
 }
-function newGame(){ if(typeof adTags==='function') adTags(); if(window.santa) santa('', [T('Ho ho ho! Let\'s beat that Snowman!'),T('New game – I believe in you! 🎅'),T('Bake him a lesson! 🎂')][Math.floor(Math.random()*3)]); B=new Array(N*N).fill(0); hist=[]; over=false; lastI=-1; freeUndo=1; $('undoTag').textContent=T('FREE'); $('undoTag').style.display = ADS()? '' : 'none';
-  [...board.children].forEach(c=>{ c.firstChild.textContent=''; c.className='c'; });
+function newGame(){ Snd.newGame(); if(typeof clearPend==='function') clearPend(); clearTimeout(autoNext.h); if(typeof adTags==='function') adTags(); if(window.santa) santa('', [T('Ho ho ho! Let\'s beat that Snowman!'),T('New game – I believe in you! 🎅'),T('Bake him a lesson! 🎂')][Math.floor(Math.random()*3)]); B=new Array(N*N).fill(0); hist=[]; over=false; lastI=-1; freeUndo=1; $('undoTag').textContent=T('FREE'); $('undoTag').style.display = ADS()? '' : 'none';
+  [...board.children].forEach((c,i)=>{ c.firstChild.textContent=''; delete c.dataset.p; c.className='c'+(i%N===N-1?' er':'')+(i>=N*(N-1)?' eb':''); });
   turn=first; $('p1').classList.toggle('on',turn===1); $('p2').classList.toggle('on',turn===2);
   $('msg').textContent = turn===1 ? T('Your turn – get 5 in a row!') : T('Snowman goes first…');
   if(twoP()) $('msg').textContent = turn===1?P[1]+' '+T('Player 1\'s turn'):'⛄ '+T('Player 2\'s turn');
   else if(turn===2) setTimeout(aiMove,400); }
+function autoNext(){ clearTimeout(autoNext.h); autoNext.h=setTimeout(()=>{ if(!over||twoP()) return;
+  if($('rankOv').style.display==='flex'){ autoNext(); return; } newGameAd(); }, 2600); }
 function newGameAd(){ $('loseOv').style.display='none'; if(gamesSinceAd>=2){ gamesSinceAd=0; showAd('next', newGame); } else newGame(); }
 $('newBtn').onclick=newGameAd; $('loseNew').onclick=newGameAd;
 $('mode').onchange=()=>{ $('lvlBox').style.opacity=twoP()?'.35':'1'; wins=[0,0]; $('s1').textContent=0; $('s2').textContent=0; $('p2').firstChild.textContent = twoP()?'⛄ '+T('Player 2')+' ':'⛄ '+T('AI')+' '; $('p1').firstChild.textContent = twoP()?P[1]+' '+T('Player 1')+' ':P[1]+' '+T('You')+' '; first=1; newGame(); };
-function takeBack(k){ for(let j=0;j<k&&hist.length;j++){ const i=hist.pop(); B[i]=0; const c=board.children[i]; c.firstChild.textContent=''; c.classList.remove('last'); }
+function takeBack(k){ for(let j=0;j<k&&hist.length;j++){ const i=hist.pop(); B[i]=0; const c=board.children[i]; c.firstChild.textContent=''; delete c.dataset.p; c.classList.remove('last'); }
   document.querySelectorAll('.c.win').forEach(c=>c.classList.remove('win'));
   lastI=hist.length?hist[hist.length-1]:-1; if(lastI>=0) board.children[lastI].classList.add('last'); }
 $('skinBtn').onclick=()=>{ drawSkins(); $('skinOv').style.display='flex'; };
@@ -534,7 +755,7 @@ $('rankShare').onclick=shareRank;
 $('reviveBtn').onclick=()=>{ $('loseOv').style.display='none'; showAd('reward',()=>{ santa('happy',T('Second chance! You can do it! 💪')); takeBack(2); wins[1]--; $('s2').textContent=wins[1]; first=3-first; over=false; turn=1; $('msg').textContent=T('Second chance! Your turn 🎂'); }); };
 $('hintBtn').onclick=()=>{ if(over||(!twoP()&&turn!==1)) return; showAd('reward',()=>{ const me=twoP()?turn:1, op=3-me; let bs=-1,bi=-1;
   for(let i=0;i<N*N;i++){ if(B[i]||(hist.length&&!near(i))) continue; const s=cellScore(i,me)*1.05+cellScore(i,op); if(s>bs){bs=s;bi=i;} }
-  if(!hist.length) bi=7*N+7; board.children[bi].classList.add('hint'); $('msg').textContent=T('💡 Try the glowing square!'); }); };
+  if(!hist.length) bi=MID; board.children[bi].classList.add('hint'); Snd.sparkle(); $('msg').textContent=T('💡 Try the glowing square!'); }); };
 $('undoBtn').onclick=()=>{ if(over) return; const k=twoP()?1:2; if(hist.length<k || (!twoP()&&turn!==1)) return;
   const doIt=()=>{ takeBack(k); if(twoP()) turn=3-turn; $('msg').textContent= twoP()? (turn===1?P[1]+' '+T('Player 1\'s turn'):'⛄ '+T('Player 2\'s turn')) : T('Your turn'); };
   if(!ADS()){ doIt(); return; }
@@ -574,7 +795,7 @@ function applyI18n(){
   tx('#rules','Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!');
   tx('#skinOv h2','Your pieces 🎨'); tx('#skinOv p','Win games to unlock new pieces!'); tx('#skinOv [data-close2]','Close');
   tx('#rankOv h2','New rank! 🏆'); tx('#lvlUp div','LEVEL UP! ⬆'); tx('#loseOv h2','So close! ⛄'); tx('#loseOv p','The Snowman got five in a row.');
-  $('undoBtn').firstChild.textContent='↩ '+T('Undo')+' '; $('hintBtn').firstChild.textContent='💡 '+T('Hint')+' ';
+  $('undoBtn').firstChild.textContent=T('Undo')+' '; $('hintBtn').firstChild.textContent=T('Hint')+' ';
   document.querySelectorAll('#hintBtn .tag').forEach(t=>t.textContent=T('AD'));
   $('mode').options[0].textContent=T('🤖 vs AI'); $('mode').options[1].textContent=T('👥 2 players');
   $('p2').firstChild.textContent='⛄ '+T('AI')+' ';
@@ -588,6 +809,29 @@ if(inTelegram){ try{ tg.ready(); tg.expand(); tg.disableVerticalSwipes && tg.dis
   if(m && +m[1] !== meId){ const L=+m[2]; setTimeout(()=>{ santa('happy', T('👋 A friend reached Level {n} and challenges you! Can you beat it? 🎂',{n:L})); }, 600); }
   if(API_ON()) api('hello').then(d=>{ if(d && !d.error){ syncLevel(d); lastReported=level; topCache=d.top||null; } }).catch(()=>{});
 } else { $('topBtn').style.display='none'; }
+
+// ---- fit board to the space left on portrait screens ----
+function fitBoard(){
+  if(innerWidth/innerHeight >= 1.1){ ['cloth','garland'].forEach(id=>$(id).style.removeProperty('width')); return; }
+  const app=$('app'), cloth=$('cloth'), bar=$('bar');
+  const avail = app.clientWidth - 8;
+  const top = cloth.getBoundingClientRect().top;
+  const free = innerHeight - top - bar.offsetHeight - 22;
+  const size = Math.max(220, Math.floor(Math.min(avail, free)));
+  cloth.style.setProperty('width', size+'px', 'important'); $('garland').style.setProperty('width', size+'px', 'important');
+  document.documentElement.style.setProperty('--cell', ((size-16)/N)+'px');
+}
+addEventListener('resize', fitBoard);
+try{ window.Telegram && Telegram.WebApp && Telegram.WebApp.onEvent && Telegram.WebApp.onEvent('viewportChanged', fitBoard); }catch(e){}
+setTimeout(fitBoard, 50); setTimeout(fitBoard, 400);
+
+// ---- sound wiring ----
+(function(){ const btn=$('sndBtn'); const draw=()=>btn.innerHTML=Snd.muted?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>':'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9c1.5 1.5 1.5 4.5 0 6"/><path d="M19 6c3 3 3 9 0 12"/></svg>'; draw();
+  btn.addEventListener('click',e=>{ e.stopPropagation(); Snd.unlock(); Snd.startMusic(); Snd.toggleMute(); draw(); });
+  document.addEventListener('pointerdown',()=>{ Snd.unlock(); Snd.startMusic(); }, {capture:true});
+  const _sa = showAd; showAd = function(kind, done){ Snd.duck(true); let fin=false; const end=()=>{ if(!fin){ fin=true; Snd.duck(false); } };
+    setTimeout(end, 30000); _sa(kind, ()=>{ end(); done&&done(); }); if(typeof adBusy!=='undefined' && !adBusy) end(); };
+})();
 </script>
 </body>
 </html>
