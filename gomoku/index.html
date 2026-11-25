@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Happy Cake – Five in a Row</title>
+<style>
+  :root{--bg1:#0f1b3d;--bg2:#1d2c5a;--gold:#f1c24a;--red:#c8283a;--green:#2f9b58;--cream:#fff7ea}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+  html,body{margin:0;height:100%;overflow:hidden;color:var(--cream);font-family:"Trebuchet MS",system-ui,sans-serif;
+    background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,0) 30%,rgba(0,0,0,.35)),
+      repeating-linear-gradient(90deg,#8a5a34 0 62px,#7a4c2b 62px 64px,#93613a 64px 126px,#6f4426 126px 128px)}
+  #shelf{position:fixed;left:0;right:0;top:0;height:64px;z-index:0;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-end;padding:0 14px 10px;
+    background:linear-gradient(180deg,#24345f,#1a2850);border-bottom:10px solid #5c361d;box-shadow:0 4px 0 #3b2414}
+  #shelf .win{position:absolute;inset:0;background:radial-gradient(circle,#ffe9a8 0 2px,transparent 3px) 0 0/38px 26px;opacity:.35}
+  .jar{width:30px;height:38px;border-radius:6px 6px 8px 8px;background:#fff7ea;color:#7a4a2a;font-size:6px;font-weight:800;display:flex;align-items:center;justify-content:center;border-top:7px solid #c8283a;position:relative}
+  .hang{font-size:20px;align-self:flex-start;margin-top:6px}
+  #app{max-width:520px;height:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;padding:8px 8px 12px}
+  #app{padding-top:66px !important}
+  #lvlBox{display:flex;align-items:center;gap:10px;width:min(500px,96vw);margin:2px 0 6px;padding:6px 12px 6px 6px;border-radius:16px;position:relative;
+    background:linear-gradient(180deg,#2e7d32,#1b5e20);border:2px solid var(--gold);box-shadow:0 4px 0 rgba(0,0,0,.35),0 0 14px rgba(241,194,74,.35)}
+  #lvlBox:before{content:'';position:absolute;left:6px;right:6px;top:-7px;height:12px;background:radial-gradient(circle at 8px 12px,#fff 7px,transparent 8px) 0 0/14px 12px repeat-x}
+  #lvlBadge{width:58px;height:58px;flex:none;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 35% 30%,#fff3b0,#f1c24a 55%,#c8961e);color:#7a1020;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+  #lvlBadge span{font-size:8px;font-weight:800;letter-spacing:1px}
+  #lvlBadge b{font-size:26px;line-height:1;font-family:Georgia,serif}
+  #lvlBadge.pop{animation:badge .7s}
+  @keyframes badge{40%{transform:scale(1.35) rotate(-8deg)}70%{transform:scale(.95)}}
+  #lvlInfo{flex:1;min-width:0}
+  #lvlName{font-weight:800;font-size:16px;color:#fff}
+  #lvlBar{height:10px;border-radius:999px;background:rgba(0,0,0,.35);margin:4px 0 3px;overflow:hidden;border:1px solid rgba(255,255,255,.25)}
+  #lvlBar i{display:block;height:100%;width:0;border-radius:999px;transition:width .6s;
+    background:repeating-linear-gradient(-45deg,#ff5a5a 0 6px,#fff 6px 10px)}
+  #lvlNext{font-size:11px;font-weight:700;color:#ffe9a8}
+  #santaCv{width:92px;height:100px;flex:none;margin:-22px -8px -10px -10px}
+  #santaRow{display:flex;align-items:center;gap:10px;margin:0 0 2px;width:min(500px,96vw)}
+  #wreath{width:54px;height:54px;border-radius:50%;flex:none;position:relative;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle,#fbe6c8 0 52%,transparent 53%),repeating-conic-gradient(#2e7d32 0 12deg,#1b5e20 12deg 24deg);box-shadow:0 3px 6px rgba(0,0,0,.4)}
+  #wreath:after{content:'🎀';position:absolute;bottom:-8px;font-size:20px}
+  #santaFace{font-size:31px;transition:transform .2s}
+  #santaFace.happy{animation:hop .5s 3}
+  #santaFace.sad{animation:shake2 .5s 2}
+  @keyframes hop{50%{transform:translateY(-8px) scale(1.12)}}
+  @keyframes shake2{25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+  #tears{position:absolute;left:0;right:0;top:30px;display:none;justify-content:space-between;padding:0 16px}
+  #tears i{width:7px;height:11px;box-shadow:0 0 3px #fff;background:#4dc3ff;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;animation:tear .7s infinite}
+  #tears i:nth-child(2){animation-delay:.35s}
+  @keyframes tear{from{transform:translateY(0);opacity:1}to{transform:translateY(16px);opacity:0}}
+  #say{background:#fff;color:#2b2140;border-radius:14px;padding:7px 12px;font-size:13px;font-weight:800;position:relative;flex:1}
+  #say:before{content:'';position:absolute;left:-8px;top:50%;margin-top:-6px;border:6px solid transparent;border-right:8px solid #fff;border-left:0}
+  h1{margin:0 0 6px;font-family:Georgia,serif;font-size:20px;text-shadow:0 2px 0 var(--red)}
+  h1 span{color:var(--gold);font-size:13px;display:inline-block;margin-left:6px;text-align:center;font-family:"Trebuchet MS",sans-serif;text-shadow:none;letter-spacing:1px}
+  #score{display:flex;gap:10px;align-items:center;font-weight:800;margin-bottom:4px}
+  .pl{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:2px solid transparent;font-size:14px}
+  .pl.on{border-color:var(--gold);box-shadow:0 0 10px rgba(241,194,74,.4)}
+  .pl b{font-size:20px}
+  #msg{min-height:18px;font-size:13px;margin:2px 0 2px;color:var(--gold);font-weight:700;text-align:center}
+  #snow{position:fixed;left:0;right:0;top:0;height:64px;pointer-events:none;z-index:0}
+  #app{position:relative;z-index:1}
+  #garland{width:min(500px,96vw,calc(100vh - 425px));height:18px;margin-top:0;display:flex;justify-content:space-around;align-items:flex-start;position:relative;margin-bottom:6px;z-index:2}
+  #garland:before{content:'';position:absolute;left:0;right:0;top:4px;height:10px;border-radius:50%;border-bottom:3px solid #2e6b34}
+  #garland i{width:9px;height:13px;border-radius:50% 50% 45% 45%;margin-top:9px;animation:blink 1.6s infinite alternate}
+  #garland i:nth-child(4n+1){background:#ff4d4d;box-shadow:0 0 8px #ff4d4d}
+  #garland i:nth-child(4n+2){background:#ffd54a;box-shadow:0 0 8px #ffd54a;animation-delay:.4s}
+  #garland i:nth-child(4n+3){background:#4dd2ff;box-shadow:0 0 8px #4dd2ff;animation-delay:.8s}
+  #garland i:nth-child(4n){background:#6dff8a;box-shadow:0 0 8px #6dff8a;animation-delay:1.2s}
+  @keyframes blink{to{opacity:.35;box-shadow:none}}
+  #cloth{padding:10px;border-radius:14px;width:min(500px,96vw,calc(100vh - 425px));box-shadow:0 10px 24px rgba(0,0,0,.45);
+    background:repeating-linear-gradient(0deg,rgba(200,40,58,.75) 0 10px,transparent 10px 20px),repeating-linear-gradient(90deg,rgba(200,40,58,.75) 0 10px,#fff4ec 10px 20px)}
+  #wrap{width:100%;aspect-ratio:1;border-radius:10px;border:5px solid #a0703f;box-shadow:inset 0 0 0 2px #c79558,0 4px 8px rgba(0,0,0,.35);padding:2px;position:relative;
+    background:linear-gradient(135deg,#f6dcae,#eccb92 60%,#e6c086),repeating-linear-gradient(90deg,rgba(150,100,50,.06) 0 3px,transparent 3px 9px);background-blend-mode:multiply}
+  #wrap:before{display:none;content:'';position:absolute;left:-8px;right:-8px;top:-14px;height:16px;z-index:3;
+    background:radial-gradient(circle at 10px 16px,#fff 10px,transparent 11px) 0 0/22px 16px repeat-x;filter:drop-shadow(0 2px 1px rgba(0,0,0,.2))}
+  .holly{position:absolute;font-size:22px;z-index:4}
+  .holly.l{left:-14px;bottom:-14px}.holly.r{right:-14px;bottom:-14px}
+  #board{width:100%;height:100%;display:grid;grid-template-columns:repeat(15,minmax(0,1fr));grid-template-rows:repeat(15,minmax(0,1fr))}
+  .c{border-right:1px solid rgba(140,90,45,.35);border-bottom:1px solid rgba(140,90,45,.35);display:flex;align-items:center;justify-content:center;font-size:min(4.4vw,2.5vh,24px);line-height:1;cursor:pointer;position:relative}
+  .c:nth-child(15n){border-right:0}.c:nth-child(n+211){border-bottom:0}
+  .c.last{background:rgba(241,194,74,.45)}
+  .c.win{background:rgba(47,155,88,.55);animation:glow .8s infinite alternate}
+  .c.drop span{animation:drop .25s ease-out}
+  @keyframes drop{from{transform:scale(1.8);opacity:0}}
+  @keyframes glow{to{background:rgba(47,155,88,.85)}}
+  #bar{display:flex;gap:8px;margin-top:10px;width:min(500px,96vw)}
+  .b{flex:1;border:0;border-radius:12px;padding:10px 4px;font-weight:800;font-size:14px;color:#fff;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+  .r{background:linear-gradient(180deg,#e2563f,var(--red))}.g{background:linear-gradient(180deg,#3fa45a,#2a7a3f)}.n{background:linear-gradient(180deg,#5a6bb0,#34407a)}
+  select.b{appearance:none;text-align:center}
+  #lvlUp{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);background:var(--cream);color:#2b2140;border:3px solid var(--gold);border-radius:16px;padding:14px 22px;text-align:center;font-weight:800;z-index:45;display:none;pointer-events:none}
+  #lvlUp .big{font-size:40px;color:var(--red);font-family:Georgia,serif}
+  #rules{font-size:11px;opacity:.75;margin-top:8px;text-align:center}
+  .ov{position:fixed;inset:0;background:rgba(5,10,30,.75);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .card{background:var(--cream);color:#2b2140;border-radius:16px;border:3px solid var(--gold);padding:16px;width:min(340px,100%);text-align:center}
+  .card h2{margin:0 0 6px;font-family:Georgia,serif;color:var(--red)}
+  .sk{background:#fff;border-radius:12px;padding:8px 2px;font-size:11px;font-weight:700;border:3px solid transparent;cursor:pointer}
+  .sk span{font-size:30px;display:block}.sk.on{border-color:var(--green)}.sk.lock{opacity:.4;cursor:default}
+  .card .btn{display:block;width:100%;margin-top:8px;border:0;border-radius:999px;padding:11px;font-weight:800;font-size:15px;cursor:pointer;color:#fff}
+  .ad{background:#111;color:#fff;border-color:#555}.ad .box{height:160px;border-radius:10px;background:repeating-linear-gradient(45deg,#333,#333 12px,#2a2a2a 12px,#2a2a2a 24px);display:flex;align-items:center;justify-content:center;font-weight:800;color:#aaa;margin:8px 0}
+  .c.hint{background:rgba(90,107,176,.55);animation:glow2 .6s infinite alternate}
+  @keyframes glow2{to{background:rgba(90,107,176,.9)}}
+  #mode{margin-bottom:4px;flex:none}
+  .tag{font-size:10px;background:var(--gold);color:#2b2140;border-radius:6px;padding:1px 5px;margin-left:4px;vertical-align:middle}
+  #adlog{font-size:11px;opacity:.7;margin-top:6px}
+  #demo{position:fixed;top:4px;right:8px;font-size:10px;letter-spacing:2px;color:var(--gold);opacity:.7}
+
+  /* ---- Christmas buttons ---- */
+  .b{position:relative;border:2px solid var(--gold)!important;border-radius:16px!important;overflow:visible;text-shadow:0 1px 1px rgba(0,0,0,.35);
+     box-shadow:0 4px 0 rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.25)!important;padding-top:13px!important}
+  .b:before{content:'';position:absolute;left:4px;right:4px;top:-7px;height:12px;border-radius:10px 10px 6px 6px;pointer-events:none;
+     background:radial-gradient(circle at 8px 12px,#fff 7px,transparent 8px) 0 0/14px 12px repeat-x;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+  .b:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.35)!important}
+  .r{background:repeating-linear-gradient(-45deg,#d92f3f 0 10px,#b81e2d 10px 20px)!important}
+  .g{background:linear-gradient(180deg,#36a65c,#1f6e3a)!important}
+  .n{background:linear-gradient(180deg,#4a5ca8,#2c3770)!important}
+  #newBtn{background:repeating-linear-gradient(-45deg,#e03a48 0 9px,#fff4ec 9px 13px,#e03a48 13px 22px)!important;color:#fff}
+  #newBtn{ text-shadow:0 1px 2px #7a0f1a,0 0 2px #7a0f1a}
+
+  #hintBtn:after{content:'⭐';position:absolute;right:-5px;top:-9px;font-size:14px}
+  #skinBtn:after{content:'🔔';position:absolute;left:-6px;top:-9px;font-size:14px}
+  .tag{background:linear-gradient(180deg,#ffe082,#f1c24a)!important;border:1px solid #b8860b}
+  #mode{border:2px solid var(--gold)!important;border-radius:999px!important;background:linear-gradient(180deg,#2e7d32,#1b5e20)!important;color:#fff;padding:7px 18px!important}
+  #mode:before{display:none}
+  .card .btn{position:relative;border:2px solid var(--gold);box-shadow:0 3px 0 rgba(0,0,0,.25)}
+  .card .btn.g{background:repeating-linear-gradient(-45deg,#36a65c 0 10px,#2a8a4b 10px 20px)!important}
+  .card .btn.n{background:repeating-linear-gradient(-45deg,#d92f3f 0 10px,#b81e2d 10px 20px)!important}
+  #bar{margin-top:14px!important}
+
+  @media (min-aspect-ratio: 11/10){
+    #app{max-width:1100px;display:grid!important;grid-template-columns:minmax(250px,420px) auto;grid-template-rows:repeat(7,auto) 1fr;column-gap:22px;align-content:start;justify-content:center;padding-top:72px!important}
+    #app>*{grid-column:1}
+    #app>h1{text-align:center}
+    #garland{grid-column:2;grid-row:1;align-self:start;width:min(calc(100vh - 118px),calc(100vw - 300px))!important}
+    #cloth{grid-column:2;grid-row:2/9;align-self:start;width:min(calc(100vh - 118px),calc(100vw - 300px))!important}
+    #lvlBox,#santaRow,#bar{width:100%!important}
+    #bar{flex-wrap:wrap}
+    #score{justify-content:center}
+    .c{font-size:calc(min(calc(100vh - 118px),calc(100vw - 300px)) / 15 * .62)!important}
+  }
+
+  #topBtn{position:fixed;right:10px;top:10px;z-index:5;width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);background:linear-gradient(180deg,#e2563f,#c8283a);font-size:20px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+  #topList{max-height:52vh;overflow:auto;text-align:left;margin:6px 0}
+  .tr{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;font-size:14px;font-weight:700}
+  .tr:nth-child(odd){background:rgba(0,0,0,.05)}
+  .tr.me{background:rgba(47,155,88,.2)}
+  .tr .rk{width:28px;text-align:center;font-weight:800}
+  .tr .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tr .lv{color:#a0141f;font-weight:800}
+  #myRank{font-size:13px;font-weight:800;color:#2f9b58;margin-top:4px}
+  #cloth,#garland{width:min(500px,96vw,calc(100vh - 425px))}
+  #bar .b{font-size:13px!important;padding-left:2px!important;padding-right:2px!important;white-space:nowrap}
+  #toastTg{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:60;background:#fff;color:#2b2140;border:2px solid var(--gold);border-radius:12px;padding:10px 14px;font-weight:800;font-size:14px;max-width:90vw;text-align:center;display:none;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+</style>
+</head>
+<body>
+<div id="shelf"><div class="win"></div><span class="hang">🥄</span><div class="jar">FLOUR</div><div class="jar">SUGAR</div><span style="font-size:26px">🎂</span><div class="jar">COCOA</div><span class="hang">🍴</span></div>
+<canvas id="snow"></canvas>
+<button id="topBtn" aria-label="Leaderboard">🏆</button>
+<div id="toastTg"></div>
+<div id="app">
+  <h1>Happy Cake <span>Five in a Row · Gomoku</span></h1>
+  <div id="lvlBox">
+    <div id="lvlBadge"><span>LEVEL</span><b id="lvlN">1</b></div>
+    <div id="lvlInfo"><div id="lvlName">Snow Pup</div>
+      <div id="lvlBar"><i id="lvlFill"></i></div>
+      <div id="lvlNext">Win 3 games to unlock 🎅</div></div>
+  </div>
+  <div id="santaRow"><canvas id="santaCv"></canvas><div id="santaFace" style="display:none"></div><div id="tears" style="display:none"></div><div id="say">Ho ho ho! Let's beat that Snowman!</div></div>
+    <div id="score"><select class="b n" id="mode" style="width:auto;padding:4px 8px!important;font-size:12px"><option value="ai">🤖 vs AI</option><option value="2p">👥 2 players</option></select><div class="pl on" id="p1">🎂 You <b id="s1">0</b></div><div class="pl" id="p2">⛄ AI <b id="s2">0</b></div></div>
+  <div id="msg">Your turn – get 5 in a row!</div>
+  <div id="garland"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div id="cloth"><div id="wrap"><div id="board"></div></div></div>
+  <div id="bar">
+    <button class="b r" id="newBtn">New game</button>
+    <button class="b n" id="skinBtn" style="flex:.55">🎨</button>
+    <button class="b n" id="undoBtn">↩ Undo <span class="tag" id="undoTag">FREE</span></button>
+    <button class="b n" id="hintBtn">💡 Hint <span class="tag">AD</span></button>
+
+  </div>
+  <div id="rules">Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!</div>
+</div>
+<div class="ov" id="topOv"><div class="card"><h2 data-t="Leaderboard 🏆">Leaderboard 🏆</h2>
+  <div id="topList"></div><div id="myRank"></div>
+  <button class="btn g" id="topChallenge" data-t="Challenge friends 🎄">Challenge friends 🎄</button>
+  <button class="btn n" data-close3 data-t="Close">Close</button></div></div>
+<div class="ov" id="skinOv"><div class="card"><h2>Your pieces 🎨</h2><p style="font-size:13px;margin:0 0 6px">Win games to unlock new pieces!</p>
+  <div id="skinList" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+  <button class="btn n" data-close2>Close</button></div></div>
+<div class="ov" id="rankOv"><div class="card"><h2>New rank! 🏆</h2><div style="font-size:15px;font-weight:800" id="rankTxt"></div>
+  <div id="rankSkin" style="font-size:46px;margin:6px 0"></div><div id="rankUnlock" style="font-size:13px;font-weight:700;color:#2f9b58"></div>
+  <button class="btn g" id="rankShare" data-t="Challenge friends 🎄">Challenge friends 🎄</button><button class="btn n" id="rankUse">Use new piece & continue</button></div></div>
+<div id="lvlUp"><div>LEVEL UP! ⬆</div><div class="big" id="lvlUpN">2</div><div id="lvlUpName"></div></div>
+<div class="ov" id="loseOv"><div class="card"><h2>So close! ⛄</h2><p>The Snowman got five in a row.</p>
+  <button class="btn g" id="reviveBtn">▶ Watch ad: take back 2 moves & keep playing</button>
+  <button class="btn n" id="loseNew">New game</button></div></div>
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+const inTelegram = !!(tg && tg.initData);
+const CONFIG = {
+  API: 'https://qjgdjueccrjqqvpidijf.supabase.co/functions/v1/gomoku',            // https://<project>.supabase.co/functions/v1/gomoku
+  BOT: 'happycake_gomoku_bot',            // bot username without @
+  APP: 'play',            // Mini App short name (BotFather /newapp)
+  ADS_REWARD: '61791',   // AdsGram reward block id
+  ADS_INTER:  'int-61792',    // AdsGram interstitial block id (int-...), optional
+};
+const I18N = {"ru": {"Five in a Row · Gomoku": "Пять в ряд · Гомоку", "LEVEL": "УРОВЕНЬ", "New game": "Новая игра", "Undo": "Отмена", "Hint": "Подсказка", "FREE": "БЕСПЛ.", "AD": "▶", "Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!": "Пять в ряд — победа. Обыгрывай Снеговика, повышай уровень и открывай новые фишки — с каждым уровнем он умнее!", "Your pieces 🎨": "Твои фишки 🎨", "Win games to unlock new pieces!": "Побеждай, чтобы открыть новые фишки!", "Close": "Закрыть", "New rank! 🏆": "Новый ранг! 🏆", "Challenge friends 🎄": "Бросить вызов друзьям 🎄", "Use new piece & continue": "Взять новую фишку", "Continue": "Продолжить", "LEVEL UP! ⬆": "НОВЫЙ УРОВЕНЬ! ⬆", "So close! ⛄": "Почти! ⛄", "The Snowman got five in a row.": "Снеговик собрал пять в ряд.", "▶ Watch ad: take back 2 moves & keep playing": "▶ Реклама: отменить 2 хода и играть дальше", "↩ Take back 2 moves & keep playing": "↩ Отменить 2 хода и играть дальше", "🤖 vs AI": "🤖 с ботом", "👥 2 players": "👥 2 игрока", "You": "Ты", "AI": "Бот", "Player 1": "Игрок 1", "Player 2": "Игрок 2", "Your turn – get 5 in a row!": "Твой ход — собери 5 в ряд!", "Snowman goes first…": "Снеговик ходит первым…", "Your turn": "Твой ход", "Snowman is thinking…": "Снеговик думает…", "Player 1's turn": "Ход игрока 1", "Player 2's turn": "Ход игрока 2", "Player 1 wins!": "Игрок 1 победил!", "Player 2 wins!": "Игрок 2 победил!", "What a game! 🎉": "Вот это партия! 🎉", "Draw – the board is full!": "Ничья — поле заполнено!", "🎉 You win! Next: Level {n} – the Snowman gets smarter!": "🎉 Победа! Дальше уровень {n} — Снеговик станет умнее!", "⛄ The Snowman wins this time!": "⛄ На этот раз победил Снеговик!", "HO HO HO! You beat the Snowman! 🎉🎂": "ХО-ХО-ХО! Ты обыграл Снеговика! 🎉🎂", "Oh no… the Snowman won 😭 Try again?": "Ох… Снеговик победил 😭 Ещё раз?", "Second chance! You can do it! 💪": "Второй шанс! У тебя получится! 💪", "Second chance! Your turn 🎂": "Второй шанс! Твой ход 🎂", "💡 Try the glowing square!": "💡 Попробуй светящуюся клетку!", "No ad right now – try again in a moment! 🎅": "Сейчас нет рекламы — попробуй чуть позже! 🎅", "Ooh, nice move! 🎂": "О, отличный ход! 🎂", "Ho ho ho! Keep going!": "Хо-хо-хо! Так держать!", "Clever!": "Хитро!", "The Snowman is sweating! 💦": "Снеговик вспотел! 💦", "You're on fire! 🔥": "Ты в ударе! 🔥", "Careful! ⛄ is lining up!": "Осторожно! ⛄ строит ряд!", "Watch out – block him!": "Берегись — перекрой его!", "Uh-oh… look at that row!": "Ой-ой… смотри на этот ряд!", "Ho ho ho! Let's beat that Snowman!": "Хо-хо-хо! Обыграем Снеговика!", "New game – I believe in you! 🎅": "Новая игра — я в тебя верю! 🎅", "Bake him a lesson! 🎂": "Испеки ему урок! 🎂", "Snow Pup": "Снежный щенок", "Snowflake": "Снежинка", "Frosty Kid": "Морозный малыш", "Ice Skater": "Фигурист", "Snowball Pro": "Мастер снежков", "Blizzard": "Метель", "Ice Knight": "Ледяной рыцарь", "Frost Wizard": "Морозный маг", "Glacier": "Ледник", "Snow King": "Снежный король", "Happy Cake": "Happy Cake", "Santa": "Санта", "Reindeer": "Олень", "Gingerbread": "Пряник", "Gift": "Подарок", "Cupcake": "Капкейк", "Bell": "Колокольчик", "Golden Star": "Золотая звезда", "Win {w} more game to unlock {x}": "Ещё побед до {x}: {w}", "Win {w} more games to unlock {x}": "Ещё побед до {x}: {w}", "All pieces unlocked – you're a legend! 👑": "Все фишки открыты — ты легенда! 👑", "Level {n}": "Уровень {n}", "New piece unlocked: {n}!": "Новая фишка: {n}!", "Leaderboard 🏆": "Таблица лидеров 🏆", "No champions yet – win a game to be first! 🎂": "Пока никого — победи первым! 🎂", "Your rank: #{r}": "Твоё место: #{r}", "Win a game to join the leaderboard!": "Победи, чтобы попасть в таблицу!", "Loading…": "Загрузка…", "Offline – the leaderboard will load later.": "Нет связи — таблица загрузится позже.", "wins": "побед", "👋 A friend reached Level {n} and challenges you! Can you beat it? 🎂": "👋 Друг дошёл до уровня {n} и бросает тебе вызов! Сможешь лучше? 🎂", "I reached Level {n} ({r}) in Happy Cake – Five in a Row! 🎂⛄ Can you beat me?": "Я дошёл до уровня {n} ({r}) в Happy Cake – Пять в ряд! 🎂⛄ Сможешь лучше?", "Challenge": "Вызов"}, "es": {"Five in a Row · Gomoku": "Cinco en raya · Gomoku", "LEVEL": "NIVEL", "New game": "Nueva partida", "Undo": "Deshacer", "Hint": "Pista", "FREE": "GRATIS", "AD": "▶", "Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!": "Cinco en raya gana. Vence al Muñeco de nieve para subir de nivel y desbloquear fichas: ¡se vuelve más listo en cada nivel!", "Your pieces 🎨": "Tus fichas 🎨", "Win games to unlock new pieces!": "¡Gana partidas para desbloquear fichas!", "Close": "Cerrar", "New rank! 🏆": "¡Nuevo rango! 🏆", "Challenge friends 🎄": "Reta a tus amigos 🎄", "Use new piece & continue": "Usar ficha nueva y seguir", "Continue": "Continuar", "LEVEL UP! ⬆": "¡SUBES DE NIVEL! ⬆", "So close! ⛄": "¡Casi! ⛄", "The Snowman got five in a row.": "El Muñeco de nieve hizo cinco en raya.", "▶ Watch ad: take back 2 moves & keep playing": "▶ Ver anuncio: deshacer 2 jugadas y seguir", "↩ Take back 2 moves & keep playing": "↩ Deshacer 2 jugadas y seguir", "🤖 vs AI": "🤖 vs IA", "👥 2 players": "👥 2 jugadores", "You": "Tú", "AI": "IA", "Player 1": "Jugador 1", "Player 2": "Jugador 2", "Your turn – get 5 in a row!": "Tu turno: ¡haz 5 en raya!", "Snowman goes first…": "El Muñeco de nieve empieza…", "Your turn": "Tu turno", "Snowman is thinking…": "El Muñeco de nieve piensa…", "Player 1's turn": "Turno del jugador 1", "Player 2's turn": "Turno del jugador 2", "Player 1 wins!": "¡Gana el jugador 1!", "Player 2 wins!": "¡Gana el jugador 2!", "What a game! 🎉": "¡Qué partida! 🎉", "Draw – the board is full!": "Empate: ¡el tablero está lleno!", "🎉 You win! Next: Level {n} – the Snowman gets smarter!": "🎉 ¡Ganaste! Siguiente: nivel {n}, ¡el Muñeco de nieve será más listo!", "⛄ The Snowman wins this time!": "⛄ ¡Esta vez gana el Muñeco de nieve!", "HO HO HO! You beat the Snowman! 🎉🎂": "¡JO JO JO! ¡Venciste al Muñeco de nieve! 🎉🎂", "Oh no… the Snowman won 😭 Try again?": "Oh no… ganó el Muñeco de nieve 😭 ¿Otra vez?", "Second chance! You can do it! 💪": "¡Segunda oportunidad! ¡Tú puedes! 💪", "Second chance! Your turn 🎂": "¡Segunda oportunidad! Tu turno 🎂", "💡 Try the glowing square!": "💡 ¡Prueba la casilla brillante!", "No ad right now – try again in a moment! 🎅": "No hay anuncios ahora, ¡prueba en un momento! 🎅", "Ooh, nice move! 🎂": "¡Uh, buena jugada! 🎂", "Ho ho ho! Keep going!": "¡Jo jo jo! ¡Sigue así!", "Clever!": "¡Qué astuto!", "The Snowman is sweating! 💦": "¡El Muñeco de nieve está sudando! 💦", "You're on fire! 🔥": "¡Estás que ardes! 🔥", "Careful! ⛄ is lining up!": "¡Cuidado! ⛄ está alineando!", "Watch out – block him!": "Atento: ¡bloquéalo!", "Uh-oh… look at that row!": "Uy… ¡mira esa fila!", "Ho ho ho! Let's beat that Snowman!": "¡Jo jo jo! ¡Venzamos al Muñeco de nieve!", "New game – I believe in you! 🎅": "Nueva partida: ¡creo en ti! 🎅", "Bake him a lesson! 🎂": "¡Dale una lección horneada! 🎂", "Snow Pup": "Cachorro de nieve", "Snowflake": "Copo de nieve", "Frosty Kid": "Niño helado", "Ice Skater": "Patinador", "Snowball Pro": "Pro de bolas de nieve", "Blizzard": "Ventisca", "Ice Knight": "Caballero de hielo", "Frost Wizard": "Mago de escarcha", "Glacier": "Glaciar", "Snow King": "Rey de la nieve", "Happy Cake": "Happy Cake", "Santa": "Santa", "Reindeer": "Reno", "Gingerbread": "Galleta de jengibre", "Gift": "Regalo", "Cupcake": "Cupcake", "Bell": "Campana", "Golden Star": "Estrella dorada", "Win {w} more game to unlock {x}": "Gana {w} más para desbloquear {x}", "Win {w} more games to unlock {x}": "Gana {w} más para desbloquear {x}", "All pieces unlocked – you're a legend! 👑": "Todas las fichas desbloqueadas: ¡eres una leyenda! 👑", "Level {n}": "Nivel {n}", "New piece unlocked: {n}!": "¡Nueva ficha: {n}!", "Leaderboard 🏆": "Clasificación 🏆", "No champions yet – win a game to be first! 🎂": "Aún no hay campeones: ¡gana y sé el primero! 🎂", "Your rank: #{r}": "Tu puesto: #{r}", "Win a game to join the leaderboard!": "¡Gana una partida para entrar en la clasificación!", "Loading…": "Cargando…", "Offline – the leaderboard will load later.": "Sin conexión: la clasificación cargará más tarde.", "wins": "victorias", "👋 A friend reached Level {n} and challenges you! Can you beat it? 🎂": "👋 ¡Un amigo llegó al nivel {n} y te reta! ¿Puedes superarlo? 🎂", "I reached Level {n} ({r}) in Happy Cake – Five in a Row! 🎂⛄ Can you beat me?": "¡Llegué al nivel {n} ({r}) en Happy Cake – Cinco en raya! 🎂⛄ ¿Me superas?", "Challenge": "Retar"}, "pt": {"Five in a Row · Gomoku": "Cinco em linha · Gomoku", "LEVEL": "NÍVEL", "New game": "Novo jogo", "Undo": "Desfazer", "Hint": "Dica", "FREE": "GRÁTIS", "AD": "▶", "Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!": "Cinco em linha vence. Vença o Boneco de neve para subir de nível e liberar peças – ele fica mais esperto a cada nível!", "Your pieces 🎨": "Suas peças 🎨", "Win games to unlock new pieces!": "Vença partidas para liberar novas peças!", "Close": "Fechar", "New rank! 🏆": "Novo título! 🏆", "Challenge friends 🎄": "Desafie amigos 🎄", "Use new piece & continue": "Usar peça nova e continuar", "Continue": "Continuar", "LEVEL UP! ⬆": "SUBIU DE NÍVEL! ⬆", "So close! ⛄": "Quase! ⛄", "The Snowman got five in a row.": "O Boneco de neve fez cinco em linha.", "▶ Watch ad: take back 2 moves & keep playing": "▶ Ver anúncio: voltar 2 jogadas e continuar", "↩ Take back 2 moves & keep playing": "↩ Voltar 2 jogadas e continuar", "🤖 vs AI": "🤖 vs IA", "👥 2 players": "👥 2 jogadores", "You": "Você", "AI": "IA", "Player 1": "Jogador 1", "Player 2": "Jogador 2", "Your turn – get 5 in a row!": "Sua vez – faça 5 em linha!", "Snowman goes first…": "O Boneco de neve começa…", "Your turn": "Sua vez", "Snowman is thinking…": "O Boneco de neve está pensando…", "Player 1's turn": "Vez do jogador 1", "Player 2's turn": "Vez do jogador 2", "Player 1 wins!": "Jogador 1 venceu!", "Player 2 wins!": "Jogador 2 venceu!", "What a game! 🎉": "Que jogo! 🎉", "Draw – the board is full!": "Empate – o tabuleiro está cheio!", "🎉 You win! Next: Level {n} – the Snowman gets smarter!": "🎉 Você venceu! Próximo: nível {n} – o Boneco de neve fica mais esperto!", "⛄ The Snowman wins this time!": "⛄ Desta vez o Boneco de neve venceu!", "HO HO HO! You beat the Snowman! 🎉🎂": "HO HO HO! Você venceu o Boneco de neve! 🎉🎂", "Oh no… the Snowman won 😭 Try again?": "Ah não… o Boneco de neve venceu 😭 De novo?", "Second chance! You can do it! 💪": "Segunda chance! Você consegue! 💪", "Second chance! Your turn 🎂": "Segunda chance! Sua vez 🎂", "💡 Try the glowing square!": "💡 Tente a casa brilhante!", "No ad right now – try again in a moment! 🎅": "Sem anúncio agora – tente daqui a pouco! 🎅", "Ooh, nice move! 🎂": "Ooh, bela jogada! 🎂", "Ho ho ho! Keep going!": "Ho ho ho! Continue assim!", "Clever!": "Esperto!", "The Snowman is sweating! 💦": "O Boneco de neve está suando! 💦", "You're on fire! 🔥": "Você está pegando fogo! 🔥", "Careful! ⛄ is lining up!": "Cuidado! ⛄ está alinhando!", "Watch out – block him!": "Atenção – bloqueie ele!", "Uh-oh… look at that row!": "Opa… olha essa fileira!", "Ho ho ho! Let's beat that Snowman!": "Ho ho ho! Vamos vencer o Boneco de neve!", "New game – I believe in you! 🎅": "Novo jogo – eu acredito em você! 🎅", "Bake him a lesson! 🎂": "Asse uma lição pra ele! 🎂", "Snow Pup": "Filhote de neve", "Snowflake": "Floco de neve", "Frosty Kid": "Criança gelada", "Ice Skater": "Patinador", "Snowball Pro": "Craque da bola de neve", "Blizzard": "Nevasca", "Ice Knight": "Cavaleiro de gelo", "Frost Wizard": "Mago do gelo", "Glacier": "Geleira", "Snow King": "Rei da neve", "Happy Cake": "Happy Cake", "Santa": "Papai Noel", "Reindeer": "Rena", "Gingerbread": "Biscoito de gengibre", "Gift": "Presente", "Cupcake": "Cupcake", "Bell": "Sino", "Golden Star": "Estrela dourada", "Win {w} more game to unlock {x}": "Vença mais {w} para liberar {x}", "Win {w} more games to unlock {x}": "Vença mais {w} para liberar {x}", "All pieces unlocked – you're a legend! 👑": "Todas as peças liberadas – você é uma lenda! 👑", "Level {n}": "Nível {n}", "New piece unlocked: {n}!": "Nova peça: {n}!", "Leaderboard 🏆": "Ranking 🏆", "No champions yet – win a game to be first! 🎂": "Ainda não há campeões – vença e seja o primeiro! 🎂", "Your rank: #{r}": "Sua posição: #{r}", "Win a game to join the leaderboard!": "Vença uma partida para entrar no ranking!", "Loading…": "Carregando…", "Offline – the leaderboard will load later.": "Sem conexão – o ranking carrega depois.", "wins": "vitórias", "👋 A friend reached Level {n} and challenges you! Can you beat it? 🎂": "👋 Um amigo chegou ao nível {n} e te desafia! Consegue superar? 🎂", "I reached Level {n} ({r}) in Happy Cake – Five in a Row! 🎂⛄ Can you beat me?": "Cheguei ao nível {n} ({r}) no Happy Cake – Cinco em linha! 🎂⛄ Consegue me superar?", "Challenge": "Desafiar"}, "id": {"Five in a Row · Gomoku": "Lima Berderet · Gomoku", "LEVEL": "LEVEL", "New game": "Main lagi", "Undo": "Batal", "Hint": "Petunjuk", "FREE": "GRATIS", "AD": "▶", "Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!": "Lima berderet menang. Kalahkan Manusia Salju untuk naik level dan membuka bidak baru – dia makin pintar tiap level!", "Your pieces 🎨": "Bidakmu 🎨", "Win games to unlock new pieces!": "Menangkan permainan untuk membuka bidak baru!", "Close": "Tutup", "New rank! 🏆": "Peringkat baru! 🏆", "Challenge friends 🎄": "Tantang teman 🎄", "Use new piece & continue": "Pakai bidak baru & lanjut", "Continue": "Lanjut", "LEVEL UP! ⬆": "NAIK LEVEL! ⬆", "So close! ⛄": "Hampir! ⛄", "The Snowman got five in a row.": "Manusia Salju membuat lima berderet.", "▶ Watch ad: take back 2 moves & keep playing": "▶ Tonton iklan: batalkan 2 langkah & lanjut", "↩ Take back 2 moves & keep playing": "↩ Batalkan 2 langkah & lanjut", "🤖 vs AI": "🤖 vs AI", "👥 2 players": "👥 2 pemain", "You": "Kamu", "AI": "AI", "Player 1": "Pemain 1", "Player 2": "Pemain 2", "Your turn – get 5 in a row!": "Giliranmu – buat 5 berderet!", "Snowman goes first…": "Manusia Salju jalan duluan…", "Your turn": "Giliranmu", "Snowman is thinking…": "Manusia Salju berpikir…", "Player 1's turn": "Giliran pemain 1", "Player 2's turn": "Giliran pemain 2", "Player 1 wins!": "Pemain 1 menang!", "Player 2 wins!": "Pemain 2 menang!", "What a game! 🎉": "Permainan seru! 🎉", "Draw – the board is full!": "Seri – papan sudah penuh!", "🎉 You win! Next: Level {n} – the Snowman gets smarter!": "🎉 Kamu menang! Berikutnya: level {n} – Manusia Salju makin pintar!", "⛄ The Snowman wins this time!": "⛄ Kali ini Manusia Salju menang!", "HO HO HO! You beat the Snowman! 🎉🎂": "HO HO HO! Kamu kalahkan Manusia Salju! 🎉🎂", "Oh no… the Snowman won 😭 Try again?": "Yah… Manusia Salju menang 😭 Coba lagi?", "Second chance! You can do it! 💪": "Kesempatan kedua! Kamu pasti bisa! 💪", "Second chance! Your turn 🎂": "Kesempatan kedua! Giliranmu 🎂", "💡 Try the glowing square!": "💡 Coba kotak yang bersinar!", "No ad right now – try again in a moment! 🎅": "Iklan belum ada – coba sebentar lagi! 🎅", "Ooh, nice move! 🎂": "Wah, langkah bagus! 🎂", "Ho ho ho! Keep going!": "Ho ho ho! Terus!", "Clever!": "Cerdik!", "The Snowman is sweating! 💦": "Manusia Salju berkeringat! 💦", "You're on fire! 🔥": "Kamu lagi panas! 🔥", "Careful! ⛄ is lining up!": "Awas! ⛄ sedang berbaris!", "Watch out – block him!": "Hati-hati – blokir dia!", "Uh-oh… look at that row!": "Waduh… lihat baris itu!", "Ho ho ho! Let's beat that Snowman!": "Ho ho ho! Ayo kalahkan Manusia Salju!", "New game – I believe in you! 🎅": "Main lagi – aku percaya padamu! 🎅", "Bake him a lesson! 🎂": "Panggang dia sampai kapok! 🎂", "Snow Pup": "Anak Salju", "Snowflake": "Kepingan Salju", "Frosty Kid": "Bocah Beku", "Ice Skater": "Peseluncur Es", "Snowball Pro": "Jago Bola Salju", "Blizzard": "Badai Salju", "Ice Knight": "Ksatria Es", "Frost Wizard": "Penyihir Es", "Glacier": "Gletser", "Snow King": "Raja Salju", "Happy Cake": "Happy Cake", "Santa": "Santa", "Reindeer": "Rusa Kutub", "Gingerbread": "Kue Jahe", "Gift": "Kado", "Cupcake": "Cupcake", "Bell": "Lonceng", "Golden Star": "Bintang Emas", "Win {w} more game to unlock {x}": "Menang {w} lagi untuk membuka {x}", "Win {w} more games to unlock {x}": "Menang {w} lagi untuk membuka {x}", "All pieces unlocked – you're a legend! 👑": "Semua bidak terbuka – kamu legenda! 👑", "Level {n}": "Level {n}", "New piece unlocked: {n}!": "Bidak baru: {n}!", "Leaderboard 🏆": "Peringkat 🏆", "No champions yet – win a game to be first! 🎂": "Belum ada juara – menang dan jadi yang pertama! 🎂", "Your rank: #{r}": "Peringkatmu: #{r}", "Win a game to join the leaderboard!": "Menangkan satu permainan untuk masuk peringkat!", "Loading…": "Memuat…", "Offline – the leaderboard will load later.": "Offline – peringkat dimuat nanti.", "wins": "menang", "👋 A friend reached Level {n} and challenges you! Can you beat it? 🎂": "👋 Temanmu sampai level {n} dan menantangmu! Bisa kalahkan? 🎂", "I reached Level {n} ({r}) in Happy Cake – Five in a Row! 🎂⛄ Can you beat me?": "Aku sampai level {n} ({r}) di Happy Cake – Lima Berderet! 🎂⛄ Bisa kalahkan aku?", "Challenge": "Tantang"}};
+const LANG = (() => { let c = '';
+  try { c = new URLSearchParams(location.search).get('lang') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code) || navigator.language || 'en'; } catch(e) { c = 'en'; }
+  c = String(c).toLowerCase().split(/[-_]/)[0];
+  if (['be','kk','ky','uz','tg','uk'].includes(c)) c = 'ru'; if (c === 'ms') c = 'id'; if (['gl','ca'].includes(c)) c = 'es';
+  return I18N[c] ? c : 'en'; })();
+function T(s, v) { let r = (I18N[LANG] && I18N[LANG][s]) || s; if (v) for (const k in v) r = r.split('{' + k + '}').join(v[k]); return r; }
+const N=15, P=['','🎂','⛄'], $=id=>document.getElementById(id);
+const SKINS=[{e:'🎂',n:'Happy Cake',l:1},{e:'🎅',n:'Santa',l:4},{e:'🦌',n:'Reindeer',l:7},{e:'🍪',n:'Gingerbread',l:10},{e:'🎁',n:'Gift',l:13},{e:'🧁',n:'Cupcake',l:16},{e:'🔔',n:'Bell',l:19},{e:'🌟',n:'Golden Star',l:22},{e:'👑',n:'Snow King',l:28}];
+let skin='🎂'; try{ skin=localStorage.getItem('caroSkin')||'🎂'; }catch(e){}
+function setSkin(e){ const old=P[1]; P[1]=e; skin=e; try{localStorage.setItem('caroSkin',e);}catch(x){}
+  if(B) B.forEach((v,i)=>{ if(v===1) board.children[i].firstChild.textContent=e; });
+  $('p1').firstChild.textContent = (twoP()?e+' '+T('Player 1')+' ':e+' '+T('You')+' '); }
+let adCount=0, gamesSinceAd=0, freeUndo=1;
+// ---- Ads: AdsGram (Telegram) ----
+const adCtl = {};
+function adController(id){ if(!id || id.startsWith('__') || !window.Adsgram) return null;
+  if(!adCtl[id]){ try{ adCtl[id]=window.Adsgram.init({ blockId:String(id) }); }catch(e){ adCtl[id]=null; } } return adCtl[id]; }
+const ADS = () => inTelegram && !!adController(CONFIG.ADS_REWARD);
+let adBusy=false;
+function showAd(kind, done){
+  if(kind!=='reward'){ const c=adController(CONFIG.ADS_INTER); if(!inTelegram||!c){ done&&done(); return; }
+    adBusy=true; c.show().catch(()=>{}).finally(()=>{ adBusy=false; done&&done(); }); return; }
+  if(!ADS()){ done&&done(); return; }
+  if(adBusy) return; adBusy=true;
+  adController(CONFIG.ADS_REWARD).show()
+    .then(r=>{ adBusy=false; if(r && r.done) done&&done(); else santa('', T('No ad right now – try again in a moment! 🎅')); })
+    .catch(()=>{ adBusy=false; santa('', T('No ad right now – try again in a moment! 🎅')); });
+}
+function adTags(){ const on=ADS(); document.querySelectorAll('.tag').forEach(t=>{ t.style.display=on?'':'none'; });
+  $('reviveBtn').textContent = on ? T('▶ Watch ad: take back 2 moves & keep playing') : T('↩ Take back 2 moves & keep playing'); }
+const twoP=()=>$('mode').value==='2p';
+
+// ---- Santa from Happy Cake (canvas) ----
+const SCV=document.getElementById('santaCv'), ctx=SCV.getContext('2d');
+const SC={cx:46,cy:63,R:30};
+const SS={mood:'idle',until:0,since:0};
+(function(){ const d=Math.min(3,devicePixelRatio||1); SCV.width=92*d; SCV.height=100*d; ctx.scale(d,d); })();
+// Hình cầu có ánh sáng từ trên-trái
+function sphere(x, y, r, light, base, dark) {
+  const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+  g.addColorStop(0, light); g.addColorStop(0.55, base); g.addColorStop(1, dark);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+}
+function blob(x, y, rx, ry, light, base, dark, rot = 0) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(1, ry / rx);
+  sphere(0, 0, rx, light, base, dark); ctx.restore();
+}
+
+const WREATH = Array.from({ length: 34 }, (_, k) => ({ a: (k / 34) * Math.PI * 2, j: Math.random(), s: 0.8 + Math.random() * 0.4 }));
+function wreath(cx, cy, R, half) {               // half: 'back' (nửa trên) | 'front' (nửa dưới)
+  WREATH.forEach(l => {
+    const front = Math.sin(l.a) > -0.05;          // nửa dưới vòng nằm trước ông
+    if ((half === 'front') !== front) return;
+    const rr = R * (1 + (l.j - 0.5) * 0.12);
+    const x = cx + Math.cos(l.a) * rr, y = cy + Math.sin(l.a) * rr;
+    blob(x, y, R * 0.2 * l.s, R * 0.11 * l.s, '#5fb26a', '#2e7a3c', '#14401f', l.a + Math.PI / 2 + (l.j - 0.5));
+  });
+  if (half === 'front') {
+    for (let k = 0; k < 9; k++) {                 // quả mọng đỏ
+      const a = (k / 9) * Math.PI * 2 + 0.3, x = cx + Math.cos(a) * R * 1.05, y = cy + Math.sin(a) * R * 1.05;
+      sphere(x, y, R * 0.055, '#ff8a8a', '#d11f2e', '#7a0d16');
+    }
+    const by = cy + R * 1.02, bw = R * 0.28;      // nơ đỏ
+    blob(cx - bw, by, bw, bw * 0.55, '#ff6b78', '#d11f2e', '#80101b', 0.35);
+    blob(cx + bw, by, bw, bw * 0.55, '#ff6b78', '#d11f2e', '#80101b', -0.35);
+    ctx.fillStyle = '#b5162a';
+    ctx.beginPath(); ctx.moveTo(cx - bw * 0.3, by); ctx.lineTo(cx - bw * 0.9, by + bw * 1.5); ctx.lineTo(cx - bw * 0.2, by + bw * 1.2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + bw * 0.3, by); ctx.lineTo(cx + bw * 0.9, by + bw * 1.5); ctx.lineTo(cx + bw * 0.2, by + bw * 1.2); ctx.fill();
+    sphere(cx, by, bw * 0.38, '#ff6b78', '#c81a2c', '#7a0d16');
+  }
+}
+
+function drawSanta(now) {
+  if (SS.mood === 'happy' && now > SS.until) SS.mood = 'idle';
+  const mood = SS.mood, e = (now - SS.since) / 1000;
+  const cx=SC.cx, cy=SC.cy, R=SC.R;
+  const s = R / 78;
+
+  let bob = Math.sin(now / 700) * 1.5;
+  if (mood === 'happy') bob = -Math.abs(Math.sin(e * 9)) * 12;
+  if (mood === 'sad') bob = 10 + Math.sin(now / 900) * 1.5;
+
+  // Bóng đổ phía sau vòng + nền ấm bên trong
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,.28)';
+  ctx.beginPath(); ctx.ellipse(cx + R * 0.08, cy + R * 0.14, R * 1.18, R * 1.18, 0, 0, Math.PI * 2); ctx.fill();
+  const inner = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.4, R * 0.1, cx, cy, R);
+  inner.addColorStop(0, '#fff1d6'); inner.addColorStop(1, '#e9b884');
+  ctx.fillStyle = inner; ctx.beginPath(); ctx.arc(cx, cy, R * 0.95, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  wreath(cx, cy, R, 'back');
+
+  // Ông già Noel: thân bị cắt theo vòng tròn, phần trên (đầu, mũ, tay) nhô ra ngoài
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, R * 0.95, 0, Math.PI * 2);
+  ctx.rect(cx - R * 3, cy - R * 4, R * 6, R * 4);       // vùng phía trên tâm: không cắt
+  ctx.clip();
+  ctx.translate(cx, cy + R * 1.2);
+  ctx.scale(s, s);
+  ctx.translate(0, bob);
+
+  const hy = -100;                                       // tâm đầu (đơn vị nội bộ)
+  // Tay
+  let hands;
+  if (mood === 'happy') { const w = Math.sin(e * 14) * 10; hands = [[-82 + w, -168], [82 - w, -168]]; }
+  else if (mood === 'sad') hands = [[-46, -8], [30, hy + 4]];
+  else hands = [[-70, -2 + Math.sin(now / 700) * 2], [70, -2 - Math.sin(now / 700) * 2]];
+  const arm = (sx, sy, hx, hy2) => {
+    const g = ctx.createLinearGradient(sx - 14, sy, sx + 14, sy);
+    g.addColorStop(0, '#7a0f1a'); g.addColorStop(0.45, '#e0303f'); g.addColorStop(1, '#7a0f1a');
+    ctx.strokeStyle = '#6a0c16'; ctx.lineWidth = 30; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(hx, hy2); ctx.stroke();
+    ctx.strokeStyle = g; ctx.lineWidth = 24;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(hx, hy2); ctx.stroke();
+    const a = Math.atan2(hy2 - sy, hx - sx);
+    blob(hx - Math.cos(a) * 9, hy2 - Math.sin(a) * 9, 15, 10, '#ffffff', '#f1efe8', '#bdb9ae', a + Math.PI / 2);
+    sphere(hx, hy2, 13, '#6fbf78', '#2f7a3a', '#123d1a');
+  };
+  const back = mood === 'happy';                         // tay giơ cao vẽ sau thân
+  if (back) { arm(-50, -48, ...hands[0]); arm(50, -48, ...hands[1]); }
+
+  // Thân áo
+  const body = ctx.createRadialGradient(-22, -50, 10, 0, -20, 95);
+  body.addColorStop(0, '#f2424f'); body.addColorStop(0.6, '#c8202f'); body.addColorStop(1, '#6a0c16');
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.moveTo(-80, 40); ctx.quadraticCurveTo(-84, -64, 0, -70); ctx.quadraticCurveTo(84, -64, 80, 40); ctx.closePath(); ctx.fill();
+  const fur = ctx.createLinearGradient(-11, 0, 11, 0);
+  fur.addColorStop(0, '#d9d6cc'); fur.addColorStop(0.4, '#ffffff'); fur.addColorStop(1, '#c9c5ba');
+  ctx.fillStyle = fur; ctx.beginPath(); ctx.roundRect(-11, -66, 22, 110, 8); ctx.fill();
+  const belt = ctx.createLinearGradient(0, -12, 0, 8);
+  belt.addColorStop(0, '#4a4040'); belt.addColorStop(0.4, '#1c1717'); belt.addColorStop(1, '#0a0808');
+  ctx.fillStyle = belt; ctx.fillRect(-82, -12, 164, 20);
+  const gold = ctx.createLinearGradient(-15, -16, 15, 12);
+  gold.addColorStop(0, '#fff0a8'); gold.addColorStop(0.5, '#e3a92e'); gold.addColorStop(1, '#8a5a12');
+  ctx.fillStyle = gold; ctx.beginPath(); ctx.roundRect(-15, -16, 30, 28, 4); ctx.fill();
+  ctx.fillStyle = '#1c1717'; ctx.fillRect(-7, -8, 14, 12);
+  if (!back) { arm(-52, -50, ...hands[0]); }
+
+  // Râu phía sau mặt
+  blob(0, hy + 40, 50, 40, '#ffffff', '#f0eee8', '#b8b4aa');
+  [[-36, hy + 24, 20], [36, hy + 24, 20], [-24, hy + 56, 22], [24, hy + 56, 22], [0, hy + 70, 24], [-44, hy + 6, 14], [44, hy + 6, 14]]
+    .forEach(([x, y, r]) => sphere(x, y, r, '#ffffff', '#f0eee8', '#b8b4aa'));
+  // Mặt (cầu da)
+  sphere(0, hy, 36, '#ffe2cf', '#f4bf9e', '#c98663');
+  // Má + mũi
+  ctx.fillStyle = 'rgba(255,110,110,.35)';
+  ctx.beginPath(); ctx.arc(-21, hy + 8, 9, 0, 7); ctx.arc(21, hy + 8, 9, 0, 7); ctx.fill();
+  sphere(0, hy + 6, 9, '#ffb7a4', '#e98a74', '#b5523f');
+  // Miệng
+  if (mood === 'happy') {
+    ctx.fillStyle = '#6e1119'; ctx.beginPath(); ctx.ellipse(0, hy + 30, 14, 11, 0, 0, Math.PI); ctx.fill();
+    ctx.fillStyle = '#ff8a8a'; ctx.beginPath(); ctx.ellipse(0, hy + 36, 8, 4, 0, 0, Math.PI); ctx.fill();
+  } else {
+    ctx.strokeStyle = '#6e1119'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.beginPath();
+    if (mood === 'sad') ctx.arc(0, hy + 40, 9, Math.PI * 1.15, Math.PI * 1.85);
+    else ctx.arc(0, hy + 22, 9, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.stroke();
+  }
+  // Ria mép
+  const tilt = mood === 'happy' ? -0.35 : mood === 'sad' ? 0.45 : 0.1;
+  blob(-16, hy + 20, 18, 9, '#ffffff', '#f0eee8', '#bdb9ae', tilt);
+  blob(16, hy + 20, 18, 9, '#ffffff', '#f0eee8', '#bdb9ae', -tilt);
+  // Mắt
+  ctx.strokeStyle = '#2a1a14'; ctx.lineWidth = 3.5;
+  if (mood === 'happy') {
+    [-13, 13].forEach(x => { ctx.beginPath(); ctx.arc(x, hy - 4, 6, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); });
+  } else if (mood === 'sad') {
+    [-13, 13].forEach(x => { ctx.beginPath(); ctx.arc(x, hy - 8, 6, Math.PI * 0.2, Math.PI * 0.8); ctx.stroke(); });
+    const ty = (now / 1100) % 1;
+    ctx.globalAlpha = 1 - ty;
+    const g = ctx.createRadialGradient(-17, hy + 4 + ty * 30, 1, -15, hy + 6 + ty * 30, 6);
+    g.addColorStop(0, '#e8f6ff'); g.addColorStop(1, '#4aa8f0');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(-15, hy - 2 + ty * 30); ctx.quadraticCurveTo(-21, hy + 8 + ty * 30, -15, hy + 11 + ty * 30);
+    ctx.quadraticCurveTo(-9, hy + 8 + ty * 30, -15, hy - 2 + ty * 30); ctx.fill();
+    ctx.globalAlpha = 1;
+  } else {
+    const blink = (now % 3800) < 140;
+    [-13, 13].forEach(x => {
+      if (blink) { ctx.beginPath(); ctx.moveTo(x - 5, hy - 5); ctx.lineTo(x + 5, hy - 5); ctx.stroke(); }
+      else { sphere(x, hy - 5, 5, '#5a4030', '#2a1a14', '#000'); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x - 1.5, hy - 7, 1.6, 0, 7); ctx.fill(); }
+    });
+  }
+  // Lông mày
+  [-1, 1].forEach(sd => {
+    const y0 = mood === 'sad' ? hy - 16 : mood === 'happy' ? hy - 22 : hy - 18;
+    const rot = mood === 'sad' ? sd * 0.45 : mood === 'happy' ? -sd * 0.25 : -sd * 0.08;
+    blob(sd * 14, y0, 11, 5, '#ffffff', '#f0eee8', '#b8b4aa', rot);
+  });
+
+  // Mũ đỏ
+  const flop = mood === 'happy' ? Math.sin(e * 12) * 10 : mood === 'sad' ? -16 : Math.sin(now / 900) * 3;
+  const tipX = 48 + flop, tipY = hy - 78 + Math.abs(flop) * 0.4;
+  const hat = ctx.createLinearGradient(-38, hy - 70, 38, hy - 20);
+  hat.addColorStop(0, '#f2424f'); hat.addColorStop(0.5, '#c8202f'); hat.addColorStop(1, '#6a0c16');
+  ctx.fillStyle = hat;
+  ctx.beginPath(); ctx.moveTo(-38, hy - 24);
+  ctx.quadraticCurveTo(-22, hy - 96, tipX, tipY);
+  ctx.quadraticCurveTo(22, hy - 58, 38, hy - 24); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.18)';                    // nếp gấp mũ
+  ctx.beginPath(); ctx.moveTo(10, hy - 40); ctx.quadraticCurveTo(24, hy - 60, tipX - 6, tipY + 4); ctx.quadraticCurveTo(22, hy - 52, 22, hy - 30); ctx.fill();
+  const trim = ctx.createLinearGradient(0, hy - 40, 0, hy - 16);
+  trim.addColorStop(0, '#ffffff'); trim.addColorStop(1, '#c9c5ba');
+  ctx.fillStyle = trim; ctx.beginPath(); ctx.roundRect(-46, hy - 40, 92, 22, 11); ctx.fill();
+  sphere(tipX, tipY, 12, '#ffffff', '#f0eee8', '#b8b4aa');
+
+  if (!back) arm(52, -50, ...hands[1]);                  // tay phải vẽ trước (lau nước mắt khi buồn)
+  ctx.restore();
+
+  wreath(cx, cy, R, 'front');
+  
+}
+
+(function loop(now){ ctx.clearRect(0,0,92,100); drawSanta(now); requestAnimationFrame(loop); })(performance.now());
+
+const CHEER=[T('Ooh, nice move! 🎂'),T('Ho ho ho! Keep going!'),T('Clever!'),T('The Snowman is sweating! 💦'),T('You\'re on fire! 🔥')];
+const WARN=[T('Careful! ⛄ is lining up!'),T('Watch out – block him!'),T('Uh-oh… look at that row!')];
+function santa(mood,text){ const now=performance.now();
+  SS.mood = mood==='happy'?'happy':mood==='sad'?'sad':'idle'; SS.since=now; SS.until=now+(mood==='happy'?1800:0);
+  if(text) $('say').textContent=text; }
+function threat(p){ // longest open run created by player p's last move
+  const i=hist[hist.length-1]; if(i==null) return 0; const x=i%N,y=(i/N)|0; let best=0;
+  for(const [dx,dy] of DIRS){ let c=1; for(const s of [1,-1]){ let k=1; while(at(x+dx*k*s,y+dy*k*s)===p){c++;k++;} } best=Math.max(best,c); } return best; }
+const RANKS=[T('Snow Pup'),T('Snowflake'),T('Frosty Kid'),T('Ice Skater'),T('Snowball Pro'),T('Blizzard'),T('Ice Knight'),T('Frost Wizard'),T('Glacier'),'Snow King'];
+let level=1; try{ level=+localStorage.getItem('caroLevel')||1; }catch(e){}
+const rankName=l=>T(RANKS[Math.min(RANKS.length-1,Math.floor((l-1)/3))]);
+function drawSkins(){ $('skinList').innerHTML=SKINS.map(k=>{ const lock=level<k.l; return `<div class="sk ${lock?'lock':''} ${k.e===skin?'on':''}" data-e="${k.e}" data-lock="${lock?1:0}"><span>${lock?'🔒':k.e}</span>${lock?T('Level {n}',{n:k.l}):T(k.n)}</div>`; }).join('');
+  [...$('skinList').children].forEach(d=>d.onclick=()=>{ if(d.dataset.lock==='1') return; setSkin(d.dataset.e); drawSkins(); }); }
+var showLevel = function(pop){ $('lvlN').textContent=level; $('lvlName').textContent='⭐ '+rankName(level);
+  const nx=SKINS.find(k=>k.l>level); const prev=[...SKINS].reverse().find(k=>k.l<=level);
+  if(nx){ const span=nx.l-prev.l, done=level-prev.l; $('lvlFill').style.width=(100*done/span)+'%'; const w=nx.l-level;
+    $('lvlNext').textContent=T(w>1?'Win {w} more games to unlock {x}':'Win {w} more game to unlock {x}',{w,x:nx.e+' '+T(nx.n)}); }
+  else { $('lvlFill').style.width='100%'; $('lvlNext').textContent=T('All pieces unlocked – you\'re a legend! 👑'); }
+  if(pop){ const b=$('lvlBadge'); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); } };
+// AI strength grows with level: fewer mistakes, less randomness, better defence
+function aiParams(L){ return { mistake:Math.max(0,0.4-0.035*(L-1)), noise:700*Math.pow(0.72,L-1), atk:Math.min(1.12,0.55+0.04*L), def:Math.min(1,0.35+0.05*L) }; }
+let B, hist, turn, over, wins=[0,0], first=1, lastI=-1;
+const board=$('board');
+for(let i=0;i<N*N;i++){ const c=document.createElement('div'); c.className='c'; c.dataset.i=i; c.innerHTML='<span></span>'; board.appendChild(c); }
+board.addEventListener('click',e=>{ const c=e.target.closest('.c'); if(!c||over) return; const i=+c.dataset.i; if(B[i]) return;
+  document.querySelectorAll('.c.hint').forEach(h=>h.classList.remove('hint'));
+  if(twoP()){ play(i,turn); if(!over) turn=3-turn; return; }
+  if(turn!==1) return; play(i,1); if(!over){ turn=2; setTimeout(aiMove,320);} });
+const DIRS=[[1,0],[0,1],[1,1],[1,-1]];
+function at(x,y){ return x<0||y<0||x>=N||y>=N ? -1 : B[y*N+x]; }
+function line(i,p){ const x=i%N,y=(i/N)|0;
+  for(const [dx,dy] of DIRS){ const cells=[i];
+    for(const s of [1,-1]){ let k=1; while(at(x+dx*k*s,y+dy*k*s)===p){ cells.push((y+dy*k*s)*N+x+dx*k*s); k++; } }
+    if(cells.length>=5) return cells; } return null; }
+function play(i,p){
+  B[i]=p; hist.push(i); const c=board.children[i]; c.firstChild.textContent=P[p]; c.classList.add('drop'); setTimeout(()=>c.classList.remove('drop'),260);
+  if(lastI>=0) board.children[lastI].classList.remove('last'); lastI=i; c.classList.add('last');
+  const w=line(i,p);
+  if(w){ over=true; w.forEach(k=>board.children[k].classList.add('win')); wins[p-1]++; $('s1').textContent=wins[0]; $('s2').textContent=wins[1];
+    $('msg').textContent = twoP() ? (p===1?P[1]+' '+T('Player 1 wins!'):'⛄ '+T('Player 2 wins!')) : p===1 ? '🎉 '+T('HO HO HO! You beat the Snowman! 🎉🎂') : T('⛄ The Snowman wins this time!');
+    first=3-first; gamesSinceAd++;
+    if(twoP()) santa('happy', (p===1?T('Player 1 wins!'):T('Player 2 wins!'))+' '+T('What a game! 🎉'));
+    else if(p===1) santa('happy',T('HO HO HO! You beat the Snowman! 🎉🎂'));
+    else santa('sad',T('Oh no… the Snowman won 😭 Try again?'));
+    if(!twoP() && p===2) setTimeout(()=>$('loseOv').style.display='flex', 1200);
+    if(!twoP() && p===1){ level++; try{localStorage.setItem('caroLevel',level);}catch(e){} showLevel(true);
+      $('lvlUpN').textContent=level; $('lvlUpName').textContent=rankName(level);
+      const newRank = rankName(level)!==rankName(level-1), unl=SKINS.find(k=>k.l===level);
+      if(newRank||unl){ setTimeout(()=>{ $('rankTxt').textContent=T('Level {n}',{n:level})+' · '+rankName(level); $('rankSkin').textContent=unl?unl.e:'🏆';
+          $('rankUnlock').textContent=unl?T('New piece unlocked: {n}!',{n:T(unl.n)}):''; $('rankUse').textContent=unl?T('Use new piece & continue'):T('Continue');
+          $('rankUse').onclick=()=>{ if(unl) setSkin(unl.e); $('rankOv').style.display='none'; };
+          $('rankOv').style.display='flex'; },1300); }
+      else { $('lvlUp').style.display='block'; setTimeout(()=>$('lvlUp').style.display='none',1800); }
+      $('msg').textContent=T('🎉 You win! Next: Level {n} – the Snowman gets smarter!',{n:level}); }
+    return; }
+  if(hist.length===N*N){ over=true; $('msg').textContent=T('Draw – the board is full!'); return; }
+  $('p1').classList.toggle('on',p===2); $('p2').classList.toggle('on',p===1);
+  if(!twoP()){ const t=threat(p);
+    if(p===1 && t>=3 && Math.random()<.7) santa('happy',CHEER[Math.floor(Math.random()*CHEER.length)]);
+    else if(p===2 && t>=4) santa('sad',WARN[Math.floor(Math.random()*WARN.length)]);
+    else if(p===2 && t===3 && Math.random()<.5) santa('',WARN[Math.floor(Math.random()*WARN.length)]); }
+  $('msg').textContent = twoP() ? (p===1?'⛄ '+T('Player 2\'s turn'):P[1]+' '+T('Player 1\'s turn')) : p===2 ? T('Your turn') : T('Snowman is thinking…');
+}
+// --- AI: pattern scoring ---
+function runScore(cnt,open){ if(cnt>=5) return 1e7;
+  if(cnt===4) return open===2?2e5: open===1?1.2e4:0;
+  if(cnt===3) return open===2?1e4: open===1?600:0;
+  if(cnt===2) return open===2?500: open===1?60:0;
+  if(cnt===1) return open===2?20:open===1?4:0; return 0; }
+function cellScore(i,p){ const x=i%N,y=(i/N)|0; let tot=0, fours=0, threes=0;
+  for(const [dx,dy] of DIRS){ let cnt=1, open=0, gap=0;
+    for(const s of [1,-1]){ let k=1; while(at(x+dx*k*s,y+dy*k*s)===p){cnt++;k++;}
+      const nx=x+dx*k*s, ny=y+dy*k*s; if(at(nx,ny)===0){ open++; if(at(nx+dx*s,ny+dy*s)===p) gap++; } }
+    let sc=runScore(cnt,open); if(gap && cnt<4) sc+=runScore(cnt+1,open)*0.35;
+    if(cnt>=4&&open) fours++; if(cnt===3&&open===2) threes++; tot+=sc; }
+  if(fours>=2||(fours&&threes)) tot+=1e5; if(threes>=2) tot+=5e4; return tot; }
+function near(i){ const x=i%N,y=(i/N)|0; for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){ if((dx||dy)&&at(x+dx,y+dy)>0) return true; } return false; }
+function aiMove(){
+  if(over) return;
+  const A=aiParams(twoP()?1:level); let best=-1, bs=-1, cands=[];
+  if(!hist.length){ play(7*N+7,2); turn=1; return; }
+  for(let i=0;i<N*N;i++){ if(B[i]||!near(i)) continue;
+    const atk=cellScore(i,2), def=cellScore(i,1);
+    let s = atk*A.atk + def*A.def + Math.random()*A.noise;
+    if(atk>=1e7) s+=1e9;            // always take a win
+    cands.push([s,i]); if(s>bs){bs=s;best=i;} }
+  if(Math.random()<A.mistake){ cands.sort((a,b)=>b[0]-a[0]); best=cands[Math.min(cands.length-1,1+Math.floor(Math.random()*4))][1]; }
+  play(best,2); turn=1;
+}
+function newGame(){ if(typeof adTags==='function') adTags(); if(window.santa) santa('', [T('Ho ho ho! Let\'s beat that Snowman!'),T('New game – I believe in you! 🎅'),T('Bake him a lesson! 🎂')][Math.floor(Math.random()*3)]); B=new Array(N*N).fill(0); hist=[]; over=false; lastI=-1; freeUndo=1; $('undoTag').textContent=T('FREE'); $('undoTag').style.display = ADS()? '' : 'none';
+  [...board.children].forEach(c=>{ c.firstChild.textContent=''; c.className='c'; });
+  turn=first; $('p1').classList.toggle('on',turn===1); $('p2').classList.toggle('on',turn===2);
+  $('msg').textContent = turn===1 ? T('Your turn – get 5 in a row!') : T('Snowman goes first…');
+  if(twoP()) $('msg').textContent = turn===1?P[1]+' '+T('Player 1\'s turn'):'⛄ '+T('Player 2\'s turn');
+  else if(turn===2) setTimeout(aiMove,400); }
+function newGameAd(){ $('loseOv').style.display='none'; if(gamesSinceAd>=2){ gamesSinceAd=0; showAd('next', newGame); } else newGame(); }
+$('newBtn').onclick=newGameAd; $('loseNew').onclick=newGameAd;
+$('mode').onchange=()=>{ $('lvlBox').style.opacity=twoP()?'.35':'1'; wins=[0,0]; $('s1').textContent=0; $('s2').textContent=0; $('p2').firstChild.textContent = twoP()?'⛄ '+T('Player 2')+' ':'⛄ '+T('AI')+' '; $('p1').firstChild.textContent = twoP()?P[1]+' '+T('Player 1')+' ':P[1]+' '+T('You')+' '; first=1; newGame(); };
+function takeBack(k){ for(let j=0;j<k&&hist.length;j++){ const i=hist.pop(); B[i]=0; const c=board.children[i]; c.firstChild.textContent=''; c.classList.remove('last'); }
+  document.querySelectorAll('.c.win').forEach(c=>c.classList.remove('win'));
+  lastI=hist.length?hist[hist.length-1]:-1; if(lastI>=0) board.children[lastI].classList.add('last'); }
+$('skinBtn').onclick=()=>{ drawSkins(); $('skinOv').style.display='flex'; };
+document.querySelectorAll('[data-close2]').forEach(b=>b.onclick=()=>b.closest('.ov').style.display='none');
+function challenge(){
+  const uid = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 0;
+  const link = (CONFIG.BOT.startsWith('__') ? location.href : `https://t.me/${CONFIG.BOT}/${CONFIG.APP}?startapp=c${uid}_${level}`);
+  const text = T('I reached Level {n} ({r}) in Happy Cake – Five in a Row! 🎂⛄ Can you beat me?', {n:level, r:rankName(level)});
+  const share = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+  if (inTelegram && tg.openTelegramLink) tg.openTelegramLink(share); else window.open(share, '_blank');
+}
+const shareRank = challenge;
+$('rankShare').onclick=shareRank;
+$('reviveBtn').onclick=()=>{ $('loseOv').style.display='none'; showAd('reward',()=>{ santa('happy',T('Second chance! You can do it! 💪')); takeBack(2); wins[1]--; $('s2').textContent=wins[1]; first=3-first; over=false; turn=1; $('msg').textContent=T('Second chance! Your turn 🎂'); }); };
+$('hintBtn').onclick=()=>{ if(over||(!twoP()&&turn!==1)) return; showAd('reward',()=>{ const me=twoP()?turn:1, op=3-me; let bs=-1,bi=-1;
+  for(let i=0;i<N*N;i++){ if(B[i]||(hist.length&&!near(i))) continue; const s=cellScore(i,me)*1.05+cellScore(i,op); if(s>bs){bs=s;bi=i;} }
+  if(!hist.length) bi=7*N+7; board.children[bi].classList.add('hint'); $('msg').textContent=T('💡 Try the glowing square!'); }); };
+$('undoBtn').onclick=()=>{ if(over) return; const k=twoP()?1:2; if(hist.length<k || (!twoP()&&turn!==1)) return;
+  const doIt=()=>{ takeBack(k); if(twoP()) turn=3-turn; $('msg').textContent= twoP()? (turn===1?P[1]+' '+T('Player 1\'s turn'):'⛄ '+T('Player 2\'s turn')) : T('Your turn'); };
+  if(!ADS()){ doIt(); return; }
+  if(freeUndo>0){ freeUndo--; $('undoTag').textContent=T('AD'); doIt(); } else showAd('reward',doIt); };
+(()=>{ const c=$('snow'), x=c.getContext('2d'); let W,H,f=[];
+  const rs=()=>{ W=c.width=innerWidth; H=c.height=64; f=Array.from({length:Math.round(W*H/2500)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2+.6,s:Math.random()*.5+.2,d:Math.random()*6})); };
+  rs(); addEventListener('resize',rs);
+  (function loop(t){ x.clearRect(0,0,W,H); x.fillStyle='rgba(255,255,255,.75)'; f.forEach(p=>{ p.y+=p.s; p.x+=Math.sin(t/1500+p.d)*.3; if(p.y>H){p.y=-4;p.x=Math.random()*W;} x.beginPath(); x.arc(p.x,p.y,p.r,0,7); x.fill(); }); requestAnimationFrame(loop); })(0); })();
+// ---- Telegram + server ----
+function toastTg(t, ms){ const b=$('toastTg'); b.textContent=t; b.style.display='block'; clearTimeout(toastTg.h); toastTg.h=setTimeout(()=>b.style.display='none', ms||4000); }
+const API_ON = () => inTelegram && CONFIG.API && !CONFIG.API.startsWith('__');
+async function api(action){ const r = await fetch(CONFIG.API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action, initData: tg.initData }) }); return r.json(); }
+let topCache=null, myRank=null;
+function syncLevel(srv){ if(srv && srv.level>level){ level=srv.level; lastReported=Math.max(lastReported,level); try{localStorage.setItem('caroLevel',level);}catch(e){} showLevel(true); } if(srv && srv.rank) myRank=srv.rank; }
+function drawTop(){ const me=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.id)||0;
+  if(!topCache){ $('topList').innerHTML='<div class="tr">'+T(API_ON()?'Loading…':'Offline – the leaderboard will load later.')+'</div>'; }
+  else if(!topCache.length){ $('topList').innerHTML='<div class="tr">'+T('No champions yet – win a game to be first! 🎂')+'</div>'; }
+  else $('topList').innerHTML = topCache.map(r=>{ const medal=['🥇','🥈','🥉'][r.rank-1]||r.rank;
+    const nm=String(r.name||'Player').replace(/[<>&]/g,'');
+    return `<div class="tr ${r.tg_id===me?'me':''}"><span class="rk">${medal}</span><span class="nm">${nm}</span><span class="lv">${T('Level {n}',{n:r.level})}</span></div>`; }).join('');
+  $('myRank').textContent = myRank ? T('Your rank: #{r}',{r:myRank}) : T('Win a game to join the leaderboard!'); }
+$('topBtn').onclick=async()=>{ drawTop(); $('topOv').style.display='flex';
+  if(API_ON()){ try{ const d=await api('top'); topCache=d.top||[]; if(d.me&&d.me.rank) myRank=d.me.rank; drawTop(); }catch(e){} } };
+$('topChallenge').onclick=challenge;
+document.querySelectorAll('[data-close3]').forEach(b=>b.onclick=()=>b.closest('.ov').style.display='none');
+// report wins to the server
+const _origShowLevel = showLevel;
+let lastReported = level;
+showLevel = function(pop){ _origShowLevel(pop);
+  if(API_ON() && level>lastReported){ lastReported=level; api('win').then(syncLevel).catch(()=>{}); } };
+// static texts
+function applyI18n(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-t]').forEach(el=>el.textContent=T(el.dataset.t));
+  const tx=(sel,k)=>{ const el=document.querySelector(sel); if(el) el.textContent=T(k); };
+  tx('h1 span','Five in a Row · Gomoku'); tx('#lvlBadge span','LEVEL'); tx('#newBtn','New game'); tx('#loseNew','New game');
+  tx('#rules','Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!');
+  tx('#skinOv h2','Your pieces 🎨'); tx('#skinOv p','Win games to unlock new pieces!'); tx('#skinOv [data-close2]','Close');
+  tx('#rankOv h2','New rank! 🏆'); tx('#lvlUp div','LEVEL UP! ⬆'); tx('#loseOv h2','So close! ⛄'); tx('#loseOv p','The Snowman got five in a row.');
+  $('undoBtn').firstChild.textContent='↩ '+T('Undo')+' '; $('hintBtn').firstChild.textContent='💡 '+T('Hint')+' ';
+  document.querySelectorAll('#hintBtn .tag').forEach(t=>t.textContent=T('AD'));
+  $('mode').options[0].textContent=T('🤖 vs AI'); $('mode').options[1].textContent=T('👥 2 players');
+  $('p2').firstChild.textContent='⛄ '+T('AI')+' ';
+}
+applyI18n();
+P[1]=skin; showLevel(); newGame(); setSkin(skin);
+if(inTelegram){ try{ tg.ready(); tg.expand(); tg.disableVerticalSwipes && tg.disableVerticalSwipes(); tg.setHeaderColor && tg.setHeaderColor('#1a2850'); tg.setBackgroundColor && tg.setBackgroundColor('#7a4c2b'); }catch(e){}
+  const sp = (tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '';
+  const m = /^c(\d+)_(\d+)$/.exec(sp);
+  const meId = tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
+  if(m && +m[1] !== meId){ const L=+m[2]; setTimeout(()=>{ santa('happy', T('👋 A friend reached Level {n} and challenges you! Can you beat it? 🎂',{n:L})); }, 600); }
+  if(API_ON()) api('hello').then(d=>{ if(d && !d.error){ syncLevel(d); lastReported=level; topCache=d.top||null; } }).catch(()=>{});
+} else { $('topBtn').style.display='none'; }
+</script>
+</body>
+</html>
