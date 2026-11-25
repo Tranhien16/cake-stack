@@ -258,6 +258,9 @@
   @media (min-aspect-ratio: 11/10){ #app{padding-top:20px!important} }
 
   @media (max-aspect-ratio: 11/10){ .c span:not(:empty){font-size:.74em;width:92%;height:92%} h1{padding-left:58px;text-align:left;align-self:stretch} }
+
+  body{padding-top:var(--tgtop,0px);padding-bottom:var(--tgbot,0px)}
+  #sndBtn,#topBtn{top:calc(10px + var(--tgtop,0px))!important}
 </style>
 </head>
 <body>
@@ -657,7 +660,7 @@ let B, hist, turn, over, wins=[0,0], first=1, lastI=-1;
 const board=$('board');
 document.documentElement.style.setProperty('--n',N);
 for(let i=0;i<N*N;i++){ const c=document.createElement('div'); c.className='c'+(i%N===N-1?' er':'')+(i>=N*(N-1)?' eb':''); c.dataset.i=i; c.innerHTML='<span></span>'; board.appendChild(c); }
-const TOUCH = matchMedia('(pointer: coarse)').matches; let pend=-1;
+const TOUCH = false; let pend=-1;
 function clearPend(){ if(pend>=0){ const p=board.children[pend]; p.classList.remove('pend'); if(!B[pend]) p.firstChild.textContent=''; } pend=-1; }
 board.addEventListener('click',e=>{ const c=e.target.closest('.c'); if(!c||over) return; const i=+c.dataset.i; if(B[i]) return;
   if(TOUCH){ if(!twoP() && turn!==1) return;
@@ -802,7 +805,8 @@ function applyI18n(){
 }
 applyI18n();
 P[1]=skin; showLevel(); newGame(); setSkin(skin);
-if(inTelegram){ try{ tg.ready(); tg.expand(); tg.disableVerticalSwipes && tg.disableVerticalSwipes(); tg.setHeaderColor && tg.setHeaderColor('#1a2850'); tg.setBackgroundColor && tg.setBackgroundColor('#7a4c2b'); }catch(e){}
+if(inTelegram){ try{ tg.ready(); tg.expand(); tg.disableVerticalSwipes && tg.disableVerticalSwipes(); tg.setHeaderColor && tg.setHeaderColor('#2f5d4a'); tg.setBackgroundColor && tg.setBackgroundColor('#2f5d4a'); tg.setBottomBarColor && tg.setBottomBarColor('#2f5d4a'); }catch(e){}
+try{ const ins=()=>{ const a=tg.safeAreaInset||{}, b=tg.contentSafeAreaInset||{}; const fs=!!tg.isFullscreen; document.documentElement.style.setProperty('--tgtop', fs? ((a.top||0)+(b.top||0))+'px' : '0px'); document.documentElement.style.setProperty('--tgbot', fs? (a.bottom||0)+'px' : '0px'); if(typeof fitBoard==='function') setTimeout(fitBoard,60); }; ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(ev=>tg.onEvent&&tg.onEvent(ev,ins)); if(tg.requestFullscreen && tg.isVersionAtLeast && tg.isVersionAtLeast('8.0') && /android|iphone|ipad|ios/i.test(tg.platform||'')) tg.requestFullscreen(); ins(); }catch(e){}
   const sp = (tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '';
   const m = /^c(\d+)_(\d+)$/.exec(sp);
   const meId = tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
@@ -816,7 +820,7 @@ function fitBoard(){
   const app=$('app'), cloth=$('cloth'), bar=$('bar');
   const avail = app.clientWidth - 8;
   const top = cloth.getBoundingClientRect().top;
-  const free = innerHeight - top - bar.offsetHeight - 22;
+  const free = innerHeight - top - bar.offsetHeight - 22 - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tgbot'))||0);
   const size = Math.max(220, Math.floor(Math.min(avail, free)));
   cloth.style.setProperty('width', size+'px', 'important'); $('garland').style.setProperty('width', size+'px', 'important');
   document.documentElement.style.setProperty('--cell', ((size-16)/N)+'px');
