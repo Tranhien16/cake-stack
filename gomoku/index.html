@@ -779,7 +779,7 @@ function drawTop(){ const me=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.
   else $('topList').innerHTML = topCache.map(r=>{ const medal=['🥇','🥈','🥉'][r.rank-1]||r.rank;
     const nm=String(r.name||'Player').replace(/[<>&]/g,'');
     return `<div class="tr ${r.tg_id===me?'me':''}"><span class="rk">${medal}</span><span class="nm">${nm}</span><span class="lv">${T('Level {n}',{n:r.level})}</span></div>`; }).join('');
-  $('myRank').textContent = myRank ? T('Your rank: #{r}',{r:myRank}) : T('Win a game to join the leaderboard!'); }
+  $('myRank').textContent = (myRank ? T('Your rank: #{r}',{r:myRank}) : T('Win a game to join the leaderboard!')) + (window.apiErr ? '  (sync: '+window.apiErr+')' : ''); }
 $('topBtn').onclick=async()=>{ drawTop(); $('topOv').style.display='flex';
   if(API_ON()){ try{ const d=await api('top'); topCache=d.top||[]; if(d.me&&d.me.rank) myRank=d.me.rank; drawTop(); }catch(e){} } };
 $('topChallenge').onclick=challenge;
@@ -788,7 +788,7 @@ document.querySelectorAll('[data-close3]').forEach(b=>b.onclick=()=>b.closest('.
 const _origShowLevel = showLevel;
 let lastReported = level;
 showLevel = function(pop){ _origShowLevel(pop);
-  if(API_ON() && level>lastReported){ lastReported=level; api('win').then(syncLevel).catch(()=>{}); } };
+  if(API_ON() && level>lastReported){ lastReported=level; api('win').then(r=>{ if(r&&r.error) window.apiErr=r.error; else syncLevel(r); }).catch(()=>{ window.apiErr='network'; }); } };
 // static texts
 function applyI18n(){
   document.documentElement.lang=LANG;
@@ -811,7 +811,7 @@ try{ const ins=()=>{ const a=tg.safeAreaInset||{}, b=tg.contentSafeAreaInset||{}
   const m = /^c(\d+)_(\d+)$/.exec(sp);
   const meId = tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
   if(m && +m[1] !== meId){ const L=+m[2]; setTimeout(()=>{ santa('happy', T('👋 A friend reached Level {n} and challenges you! Can you beat it? 🎂',{n:L})); }, 600); }
-  if(API_ON()) api('hello').then(d=>{ if(d && !d.error){ syncLevel(d); lastReported=level; topCache=d.top||null; } }).catch(()=>{});
+  if(API_ON()) api('hello').then(d=>{ if(d && !d.error){ const local=level; syncLevel(d); lastReported=level; topCache=d.top||null; if(local>(d.level||1)){ api('win').then(r=>{ if(r&&r.error) window.apiErr=r.error; else syncLevel(r); }).catch(()=>{ window.apiErr='network'; }); } } else window.apiErr=(d&&d.error)||'no reply'; }).catch(()=>{ window.apiErr='network'; });
 } else { $('topBtn').style.display='none'; }
 
 // ---- fit board to the space left on portrait screens ----
