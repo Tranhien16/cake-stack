@@ -262,7 +262,10 @@
   body{padding-top:var(--tgtop,0px);padding-bottom:var(--tgbot,0px)}
   #sndBtn,#topBtn{top:calc(10px + var(--tgtop,0px))!important}
 
-  @media (max-aspect-ratio: 11/10){ h1{padding-right:58px!important;white-space:normal!important;line-height:1.05!important} h1 span{display:block!important;font-size:13px!important;margin-top:3px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} }
+  @media (max-aspect-ratio: 11/10){ h1{padding-right:104px!important;white-space:normal!important;line-height:1.05!important} h1 span{display:block!important;font-size:13px!important;margin-top:3px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} }
+  #moreBtn{position:fixed;right:60px;top:calc(10px + var(--tgtop,0px));z-index:5;width:40px;height:40px;border-radius:50%;background:var(--felt2);border:2px dashed var(--cream);color:var(--cream);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+  @media (max-aspect-ratio: 11/10) and (max-height: 800px){ #moreBtn{width:34px;height:34px;top:calc(4px + var(--tgtop,0px));right:54px;font-size:16px} }
+  .btn.more{background:var(--felt2)!important;color:var(--cream)!important}
 </style>
 </head>
 <body>
@@ -270,6 +273,7 @@
 <canvas id="snow"></canvas>
 <button id="topBtn" aria-label="Leaderboard"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M8 20h8"/></svg></button>
 <div id="toastTg"></div>
+<button id="moreBtn" aria-label="More games" title="More games">🎮</button>
 <button id="sndBtn" aria-label="Sound"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9c1.5 1.5 1.5 4.5 0 6"/><path d="M19 6c3 3 3 9 0 12"/></svg></button>
 <div id="app">
   <h1>Happy Cake <span>Five in a Row · Gomoku</span></h1>
@@ -296,6 +300,7 @@
 <div class="ov" id="topOv"><div class="card"><h2 data-t="Leaderboard 🏆">Leaderboard 🏆</h2>
   <div id="topList"></div><div id="myRank"></div>
   <button class="btn g" id="topChallenge" data-t="Challenge friends 🎄">Challenge friends 🎄</button>
+  <button class="btn more" data-more data-t="🎮 More games">🎮 More games</button>
   <button class="btn n" data-close3 data-t="Close">Close</button></div></div>
 <div class="ov" id="skinOv"><div class="card"><h2>Your pieces 🎨</h2><p style="font-size:13px;margin:0 0 6px">Win games to unlock new pieces!</p>
   <div id="skinList" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
@@ -306,7 +311,8 @@
 <div id="lvlUp"><div>LEVEL UP! ⬆</div><div class="big" id="lvlUpN">2</div><div id="lvlUpName"></div></div>
 <div class="ov" id="loseOv"><div class="card"><h2>So close! ⛄</h2><p>The Snowman got five in a row.</p>
   <button class="btn g" id="reviveBtn">▶ Watch ad: take back 2 moves & keep playing</button>
-  <button class="btn n" id="loseNew">New game</button></div></div>
+  <button class="btn n" id="loseNew">New game</button>
+  <button class="btn more" data-more data-t="🎮 More games">🎮 More games</button></div></div>
 <script>
 // ---- Sound: Christmas music + game sounds (Web Audio, no files) ----
 const Snd = (() => {
@@ -433,6 +439,11 @@ const LANG = (() => { let c = '';
   c = String(c).toLowerCase().split(/[-_]/)[0];
   if (['be','kk','ky','uz','tg','uk'].includes(c)) c = 'ru'; if (c === 'ms') c = 'id'; if (['gl','ca'].includes(c)) c = 'es';
   return I18N[c] ? c : 'en'; })();
+Object.assign(I18N.vi||(I18N.vi={}),{"🎮 More games": "🎮 Game khác", "More games": "Game khác"});
+Object.assign(I18N.ru||(I18N.ru={}),{"🎮 More games": "🎮 Другие игры", "More games": "Другие игры"});
+Object.assign(I18N.es||(I18N.es={}),{"🎮 More games": "🎮 Más juegos", "More games": "Más juegos"});
+Object.assign(I18N.pt||(I18N.pt={}),{"🎮 More games": "🎮 Mais jogos", "More games": "Mais jogos"});
+Object.assign(I18N.id||(I18N.id={}),{"🎮 More games": "🎮 Game lainnya", "More games": "Game lainnya"});
 function T(s, v) { let r = (I18N[LANG] && I18N[LANG][s]) || s; if (v) for (const k in v) r = r.split('{' + k + '}').join(v[k]); return r; }
 const N=(Math.min(innerWidth,innerHeight)<560?13:15), MID=Math.floor(N/2)*N+Math.floor(N/2), P=['','🎂','⛄'], $=id=>document.getElementById(id);
 const SKINS=[{e:'🎂',n:'Happy Cake',l:1},{e:'🎅',n:'Santa',l:4},{e:'🦌',n:'Reindeer',l:7},{e:'🍪',n:'Gingerbread',l:10},{e:'🎁',n:'Gift',l:13},{e:'🧁',n:'Cupcake',l:16},{e:'🔔',n:'Bell',l:19},{e:'🌟',n:'Golden Star',l:22},{e:'👑',n:'Snow King',l:28},{e:'🐧',n:'Penguin',l:999,ref:1}];
@@ -792,6 +803,10 @@ function drawTop(){ const me=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.
 $('topBtn').onclick=async()=>{ drawTop(); $('topOv').style.display='flex';
   if(API_ON()){ try{ const d=await api('top'); topCache=d.top||[]; if(d.me&&d.me.rank) myRank=d.me.rank; drawTop(); }catch(e){} } };
 $('topChallenge').onclick=challenge;
+const MORE_URL='https://t.me/HopIsleBot';
+function openMore(){ try{ if(inTelegram && tg.openTelegramLink) tg.openTelegramLink(MORE_URL); else window.open(MORE_URL,'_blank'); }catch(e){ window.open(MORE_URL,'_blank'); } }
+$('moreBtn').onclick=openMore; $('moreBtn').title=$('moreBtn').ariaLabel=T('More games');
+document.querySelectorAll('[data-more]').forEach(b=>b.onclick=openMore);
 document.querySelectorAll('[data-close3]').forEach(b=>b.onclick=()=>b.closest('.ov').style.display='none');
 // report wins to the server
 const _origShowLevel = showLevel;
