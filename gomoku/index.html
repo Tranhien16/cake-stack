@@ -266,6 +266,7 @@
   #moreBtn{position:fixed;right:60px;top:calc(10px + var(--tgtop,0px));z-index:5;width:40px;height:40px;border-radius:50%;background:var(--felt2);border:2px dashed var(--cream);color:var(--cream);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
   @media (max-aspect-ratio: 11/10) and (max-height: 800px){ #moreBtn{width:34px;height:34px;top:calc(4px + var(--tgtop,0px));right:54px;font-size:16px} }
   .btn.more{background:var(--felt2)!important;color:var(--cream)!important}
+  #shareBtn2{display:block;border:2px dashed var(--cream);border-radius:999px;font-weight:800;cursor:pointer;position:relative;z-index:2}
 </style>
 </head>
 <body>
@@ -295,6 +296,7 @@
     <button class="b n" id="hintBtn">Hint <span class="tag">AD</span></button>
 
   </div>
+  <button class="btn more" id="shareBtn2" data-t="Challenge friends 🎄" style="width:auto;margin:8px auto 0;padding:8px 18px;font-size:14px">Challenge friends 🎄</button>
   <div id="rules">Five in a row wins. Beat the Snowman to level up and unlock new pieces – he gets smarter every level!</div>
 </div>
 <div class="ov" id="topOv"><div class="card"><h2 data-t="Leaderboard 🏆">Leaderboard 🏆</h2>
@@ -312,6 +314,7 @@
 <div class="ov" id="loseOv"><div class="card"><h2>So close! ⛄</h2><p>The Snowman got five in a row.</p>
   <button class="btn g" id="reviveBtn">▶ Watch ad: take back 2 moves & keep playing</button>
   <button class="btn n" id="loseNew">New game</button>
+  <button class="btn g" id="loseShare" data-t="Challenge friends 🎄">Challenge friends 🎄</button>
   <button class="btn more" data-more data-t="🎮 More games">🎮 More games</button></div></div>
 <script>
 // ---- Sound: Christmas music + game sounds (Web Audio, no files) ----
@@ -774,7 +777,7 @@ function challenge(){
   if (inTelegram && tg.openTelegramLink) tg.openTelegramLink(share); else window.open(share, '_blank');
 }
 const shareRank = challenge;
-$('rankShare').onclick=shareRank;
+$('rankShare').onclick=shareRank; $('loseShare').onclick=shareRank; $('shareBtn2').onclick=shareRank;
 $('reviveBtn').onclick=()=>{ $('loseOv').style.display='none'; showAd('reward',()=>{ santa('happy',T('Second chance! You can do it! 💪')); takeBack(2); wins[1]--; $('s2').textContent=wins[1]; first=3-first; over=false; turn=1; $('msg').textContent=T('Second chance! Your turn 🎂'); }); };
 $('hintBtn').onclick=()=>{ if(over||(!twoP()&&turn!==1)) return; showAd('reward',()=>{ const me=twoP()?turn:1, op=3-me; let bs=-1,bi=-1;
   for(let i=0;i<N*N;i++){ if(B[i]||(hist.length&&!near(i))) continue; const s=cellScore(i,me)*1.05+cellScore(i,op); if(s>bs){bs=s;bi=i;} }
